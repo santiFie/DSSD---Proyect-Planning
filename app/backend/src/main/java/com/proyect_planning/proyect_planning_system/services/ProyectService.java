@@ -2,6 +2,9 @@ package com.proyect_planning.proyect_planning_system.services;
 
 import java.util.List;
 
+import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
+import com.proyect_planning.proyect_planning_system.entities.Stage;
+import com.proyect_planning.proyect_planning_system.repositories.StageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +18,12 @@ public class ProyectService {
 
     @Autowired
     private ProyectRepository proyectRepository;
+    @Autowired
+    private StageRepository stageRepository;
 
-    public ProyectService(ProyectRepository proyectRepository) {
+    public ProyectService(ProyectRepository proyectRepository, StageRepository stageRepository) {
         this.proyectRepository = proyectRepository;
+        this.stageRepository = stageRepository;
     }
 
     public Proyect createProject(NewProjectDto newProjectDto) {
@@ -46,4 +52,20 @@ public class ProyectService {
     public List<Proyect> getAllProjects() {
         return proyectRepository.findAll();
     }
+
+    public Proyect addStageToProject(Long projectId, NewStageDto newStageDto) {
+        Proyect proyect = proyectRepository.findById(projectId).orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        Stage s = Stage.builder()
+                .name(newStageDto.getName())
+                .needs(newStageDto.getNeeds())
+                .startDate(newStageDto.getStartDate())
+                .proyect(proyect)
+                .build();
+        stageRepository.save(s);
+
+        proyect.addStage(s);
+        return proyectRepository.save(proyect);
+    }
+
 }

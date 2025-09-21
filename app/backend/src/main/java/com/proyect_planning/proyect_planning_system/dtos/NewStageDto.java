@@ -7,16 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewProjectDto {
+public class NewStageDto {
 
     private String name;
 
-    private String description;
-    
-    private String startDate;
-    
-    private String endDate;
+    private String needs;
 
-    private String neighborhood;
-    
+    private String startDate;
+
+    private Long proyectId;
 }
