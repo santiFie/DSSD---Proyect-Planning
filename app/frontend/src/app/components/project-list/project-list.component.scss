@@ -1,0 +1,56 @@
+.project-list {
+      padding: 20px 0;
+    }
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.project-card {
+    position: relative;
+}
+
+.project-card h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.project-description {
+    margin: 10px 0;
+    color: #666;
+    line-height: 1.4;
+}
+
+.project-dates {
+    margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.project-dates small {
+    color: #888;
+}
+
+.project-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.alert {
+    text-align: center;
+    margin: 20px 0;
+}

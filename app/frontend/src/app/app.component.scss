@@ -1,0 +1,32 @@
+.app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 300;
+}
+
+.app-header nav {
+    margin-top: 1rem;
+}
+
+.app-header nav a {
+    margin-right: 10px;
+    text-decoration: none;
+}
+
+.app-main {
+    flex: 1;
+    padding: 2rem 0;
+}

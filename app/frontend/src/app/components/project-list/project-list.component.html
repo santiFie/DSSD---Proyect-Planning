@@ -1,0 +1,30 @@
+<div class="project-list">
+    <h2>Lista de Proyectos</h2>
+    
+    <div *ngIf="loading" class="alert">
+    Cargando proyectos...
+    </div>
+    
+    <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+    </div>
+    
+    <div *ngIf="!loading && projects.length === 0" class="alert">
+    No hay proyectos disponibles. <a routerLink="/projects/new">¡Crea el primer proyecto!</a>
+    </div>
+    
+    <div class="projects-grid" *ngIf="!loading && projects.length > 0">
+    <div class="card project-card" *ngFor="let project of projects">
+        <h3>{{ project.name }}</h3>
+        <p class="project-description">{{ project.description }}</p>
+        <div class="project-dates">
+        <small><strong>Inicio:</strong> {{ project.startDate }}</small>
+        <small><strong>Fin:</strong> {{ project.endDate }}</small>
+        </div>
+        <div class="project-actions">
+        <a [routerLink]="['/projects/edit', project.id]" class="btn btn-secondary">Editar</a>
+        <button (click)="deleteProject(project.id!)" class="btn btn-danger">Eliminar</button>
+        </div>
+    </div>
+    </div>
+</div>
