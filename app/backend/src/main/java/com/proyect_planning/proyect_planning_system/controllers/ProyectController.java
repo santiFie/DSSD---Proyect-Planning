@@ -2,15 +2,10 @@ package com.proyect_planning.proyect_planning_system.controllers;
 
 import java.util.List;
 
+import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.*;
 
 import com.proyect_planning.proyect_planning_system.dtos.NewProjectDto;
 import com.proyect_planning.proyect_planning_system.entities.Proyect;
@@ -50,5 +45,11 @@ public class ProyectController {
     public ResponseEntity<List<Proyect>> getAllProjects() {
         List<Proyect> projects = proyectService.getAllProjects();
         return ResponseEntity.ok(projects);
+    }
+
+    @PutMapping("/addStage/{id}")
+    public ResponseEntity<Proyect> addStageToProject(@PathVariable Long id, @RequestBody NewStageDto newStageDto) {
+        Proyect updatedProject = proyectService.addStageToProject(id, newStageDto);
+        return ResponseEntity.ok(updatedProject);
     }
 }
