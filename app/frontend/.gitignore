@@ -36,6 +36,7 @@ Thumbs.db
 /dist/
 /tmp/
 /out-tsc/
+/.angular/
 
 # e2e
 /e2e/*.js
