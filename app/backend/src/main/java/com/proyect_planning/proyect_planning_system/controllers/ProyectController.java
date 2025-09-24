@@ -20,8 +20,6 @@ public class ProyectController {
     @Autowired
     private ProyectService proyectService;
 
-    @Autowired
-    private ProyectRepository proyectRepository;
 
     @PostMapping
     public ResponseEntity<Proyect> createProject(@RequestBody NewProjectDto newProjectDto) {
@@ -47,7 +45,7 @@ public class ProyectController {
         return ResponseEntity.ok(projects);
     }
 
-    @PutMapping("/addStage/{id}")
+    @PutMapping("/{id}/addStage")
     public ResponseEntity<Proyect> addStageToProject(@PathVariable Long id, @RequestBody NewStageDto newStageDto) {
         Proyect updatedProject = proyectService.addStageToProject(id, newStageDto);
         return ResponseEntity.ok(updatedProject);
