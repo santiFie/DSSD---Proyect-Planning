@@ -17,6 +17,7 @@ import java.util.List;
 public class Proyect {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -31,10 +32,11 @@ public class Proyect {
     @Column
     private String endDate;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String neighborhood;
 
     @OneToMany(mappedBy = "proyect", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Stage> stages = new ArrayList<>();
 
     public void addStage(Stage stage) {
