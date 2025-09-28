@@ -3,6 +3,7 @@ package com.proyect_planning.proyect_planning_system.services;
 import java.util.List;
 
 import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
+import com.proyect_planning.proyect_planning_system.dtos.StageDto;
 import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.repositories.StageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +37,32 @@ public class ProyectService {
                 .description(newProjectDto.getDescription())
                 .startDate(newProjectDto.getStartDate())
                 .endDate(newProjectDto.getEndDate())
+                .neighborhood(newProjectDto.getNeighborhood())
                 .build();
 
-        return proyectRepository.save(proyect);
+        // Guardar el proyecto primero
+        proyect = proyectRepository.save(proyect);
+
+        // Crear y agregar las etapas si existen
+        if (newProjectDto.getStages() != null && !newProjectDto.getStages().isEmpty()) {
+            for (StageDto stageDto : newProjectDto.getStages()) {
+                Stage stage = Stage.builder()
+                        .name(stageDto.getName())
+                        .needs(stageDto.getNeeds())
+                        .covered(stageDto.getCovered() != null ? stageDto.getCovered() : false)
+                        .startDate(stageDto.getStartDate())
+                        .endDate(stageDto.getEndDate())
+                        .proyect(proyect)
+                        .build();
+                
+                proyect.addStage(stage);
+            }
+            
+            // Guardar el proyecto con las etapas
+            proyect = proyectRepository.save(proyect);
+        }
+
+        return proyect;
     }
 
     public Proyect getProjectByName(String name) {

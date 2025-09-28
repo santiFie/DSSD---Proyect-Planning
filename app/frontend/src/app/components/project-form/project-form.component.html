@@ -1,0 +1,201 @@
+<div class="project-form">
+    <h2>{{ isEdit ? 'Editar Proyecto' : 'Nuevo Proyecto' }}</h2>
+    
+    <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+    </div>
+    
+    <div *ngIf="success" class="alert alert-success">
+    {{ success }}
+    </div>
+    
+    <form (ngSubmit)="onSubmit()" #projectForm="ngForm">
+    <div class="form-group">
+        <label for="name">Nombre del Proyecto *</label>
+        <input
+        type="text"
+        id="name"
+        name="name"
+        [(ngModel)]="project.name"
+        required
+        #name="ngModel"
+        class="form-control"
+        placeholder="Ingresa el nombre del proyecto"
+        >
+        <div *ngIf="name.invalid && name.touched" class="error-message">
+        El nombre es obligatorio.
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="description">Descripción *</label>
+        <textarea
+        id="description"
+        name="description"
+        [(ngModel)]="project.description"
+        required
+        #description="ngModel"
+        class="form-control"
+        rows="4"
+        placeholder="Describe el proyecto"
+        ></textarea>
+        <div *ngIf="description.invalid && description.touched" class="error-message">
+        La descripción es obligatoria.
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="startDate">Fecha de Inicio *</label>
+        <input
+        type="date"
+        id="startDate"
+        name="startDate"
+        [(ngModel)]="project.startDate"
+        required
+        #startDate="ngModel"
+        class="form-control"
+        >
+        <div *ngIf="startDate.invalid && startDate.touched" class="error-message">
+        La fecha de inicio es obligatoria.
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="endDate">Fecha de Fin *</label>
+        <input
+        type="date"
+        id="endDate"
+        name="endDate"
+        [(ngModel)]="project.endDate"
+        required
+        #endDate="ngModel"
+        class="form-control"
+        [min]="project.startDate"
+        >
+        <div *ngIf="endDate.invalid && endDate.touched" class="error-message">
+        La fecha de fin es obligatoria.
+        </div>
+    </div>
+
+    <!-- Sección de Etapas -->
+    <div class="form-section">
+        <h3>Etapas del Proyecto</h3>
+        <p class="section-description">Agrega las etapas que componen este proyecto</p>
+        
+        <div class="stages-container">
+            <div *ngFor="let stage of project.stages; let i = index" class="stage-item">
+                <div class="stage-header">
+                    <h4>Etapa {{ i + 1 }}</h4>
+                    <button 
+                        type="button" 
+                        class="btn btn-danger btn-sm" 
+                        (click)="removeStage(i)"
+                        title="Eliminar etapa"
+                    >
+                        ✕
+                    </button>
+                </div>
+                
+                <div class="stage-form">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label [for]="'stageName' + i">Nombre de la Etapa *</label>
+                            <input
+                                type="text"
+                                [id]="'stageName' + i"
+                                [name]="'stageName' + i"
+                                [(ngModel)]="stage.name"
+                                required
+                                class="form-control"
+                                placeholder="Nombre de la etapa"
+                            >
+                        </div>
+                        
+                        <div class="form-group col-md-6">
+                            <label [for]="'stageNeeds' + i">Necesidades *</label>
+                            <input
+                                type="text"
+                                [id]="'stageNeeds' + i"
+                                [name]="'stageNeeds' + i"
+                                [(ngModel)]="stage.needs"
+                                required
+                                class="form-control"
+                                placeholder="¿Qué se necesita para esta etapa?"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label [for]="'stageStartDate' + i">Fecha de Inicio *</label>
+                            <input
+                                type="date"
+                                [id]="'stageStartDate' + i"
+                                [name]="'stageStartDate' + i"
+                                [(ngModel)]="stage.startDate"
+                                required
+                                class="form-control"
+                                [min]="project.startDate"
+                                [max]="project.endDate"
+                            >
+                        </div>
+                        
+                        <div class="form-group col-md-6">
+                            <label [for]="'stageEndDate' + i">Fecha de Fin</label>
+                            <input
+                                type="date"
+                                [id]="'stageEndDate' + i"
+                                [name]="'stageEndDate' + i"
+                                [(ngModel)]="stage.endDate"
+                                class="form-control"
+                                [min]="stage.startDate || project.startDate"
+                                [max]="project.endDate"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input
+                                type="checkbox"
+                                [name]="'stageCovered' + i"
+                                [(ngModel)]="stage.covered"
+                                class="form-checkbox"
+                            >
+                            Esta etapa ya está cubierta
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="add-stage-section">
+                <button 
+                    type="button" 
+                    class="btn btn-outline-primary" 
+                    (click)="addStage()"
+                >
+                    + Agregar Etapa
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-actions">
+        <button 
+        type="submit" 
+        class="btn btn-primary" 
+        [disabled]="!projectForm.form.valid || loading"
+        >
+        {{ loading ? 'Guardando...' : (isEdit ? 'Actualizar' : 'Crear') }} Proyecto
+        </button>
+        
+        <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="goBack()"
+        >
+        Cancelar
+        </button>
+    </div>
+    </form>
+</div>

@@ -1,5 +1,6 @@
 package com.proyect_planning.proyect_planning_system.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,7 @@ import java.util.List;
 public class Stage {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, length = 100)
@@ -26,6 +28,7 @@ public class Stage {
     private String needs;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean covered = false;
 
     @Column(nullable = false)
@@ -36,9 +39,11 @@ public class Stage {
 
     @ManyToOne
     @JoinColumn(name = "proyect_id", nullable = false)
+    @JsonIgnore
     private Proyect proyect;
 
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Revision> revisions = new ArrayList<>();
 
     // En Stage

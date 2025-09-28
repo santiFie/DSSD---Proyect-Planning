@@ -1,0 +1,17 @@
+<div class="app-container">
+  <header class="app-header">
+    <nav class="navbar">
+      <div class="nav-brand">
+        <h1>{{ title }}</h1>
+      </div>
+      <div class="nav-links">
+        <a routerLink="/projects" routerLinkActive="active" class="nav-link">Proyectos</a>
+        <a routerLink="/projects/new" class="nav-link btn-primary">Nuevo Proyecto</a>
+      </div>
+    </nav>
+  </header>
+  
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
