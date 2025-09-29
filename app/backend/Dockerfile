@@ -10,6 +10,6 @@ RUN mvn package -DskipTests
 # --- Etapa 2: Run ---
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8080
+COPY --from=build /app/target/app.jar app.jar
+EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
