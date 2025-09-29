@@ -1,5 +1,6 @@
 package com.proyect_planning.proyect_planning_system.controllers;
 
+import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaApiService;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,9 +77,9 @@ public class BonitaController {
     @PostMapping("/processes/{processId}/start")
     public ResponseEntity<?> startProcess(
             @PathVariable String processId,
-            @RequestBody(required = false) Map<String, Object> variables) {
+            @RequestBody(required = false) List<Stage> variables) {
         try {
-            Map<String, Object> instance = apiService.startProcessInstance(processId, variables);
+            Map<String, List<Object>> instance = apiService.startProcessInstance(processId, variables);
             return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Proceso iniciado exitosamente",
