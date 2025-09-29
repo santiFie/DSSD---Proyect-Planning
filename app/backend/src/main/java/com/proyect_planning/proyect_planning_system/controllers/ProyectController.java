@@ -25,6 +25,7 @@ import com.proyect_planning.proyect_planning_system.dtos.NewProjectDto;
 import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
 import com.proyect_planning.proyect_planning_system.dtos.ProyectDto;
 import com.proyect_planning.proyect_planning_system.entities.Proyect;
+import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.repositories.ProyectRepository;
 import com.proyect_planning.proyect_planning_system.services.ProyectService;
 
@@ -66,23 +67,14 @@ public class ProyectController {
                 String processId = apiService.getProcessId("Gestion Proyecto");
                 
                 if (processId != null) {
-                    // Preparar variables para el proceso
-                    Map<String, Object> processVariables = new HashMap<>();
-                    processVariables.put("project_id", project.getId());
-                    processVariables.put("project_name", project.getName());
-                    processVariables.put("project_description", project.getDescription());
-                    processVariables.put("start_date", project.getStartDate().toString());
-                    processVariables.put("end_date", project.getEndDate().toString());
-                    
-                    // Para stages_list, crear una lista simple de strings
-                    List<String> stageNames = new ArrayList<>();
+                    // Para stages_list, crear una lista de objetos Stage
+                    List<Stage> stagesList = new ArrayList<>();
                     if (project.getStages() != null) {
-                        project.getStages().forEach(stage -> stageNames.add(stage.getName()));
+                        project.getStages().forEach(stage -> stagesList.add(stage));
                     }
-                    processVariables.put("stages_list", stageNames);
                     
                     // Iniciar el proceso en Bonita
-                    Map<String, Object> processInstance = apiService.startProcessInstance(processId, processVariables);
+                    Map<String, List<Object>> processInstance = apiService.startProcessInstance(processId, stagesList);
                     
                     // Actualizar respuesta con información de Bonita
                     response.put("message", "Proyecto y proceso Bonita creados exitosamente");

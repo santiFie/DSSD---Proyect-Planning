@@ -3,11 +3,14 @@ package com.proyect_planning.proyect_planning_system.services.bonita;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proyect_planning.proyect_planning_system.config.BonitaConfig;
+import com.proyect_planning.proyect_planning_system.entities.Stage;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,14 +75,14 @@ public class BonitaApiService {
     /**
      * Inicia una nueva instancia de proceso en Bonita
      */
-    public Map<String, Object> startProcessInstance(String processId, Map<String, Object> variables) {
+    public Map<String, List<Object>> startProcessInstance(String processId, List<Stage> variables) {
         try {
             HttpHeaders headers = authService.createAuthenticatedHeaders();
             
             // Preparar el payload para iniciar el proceso
-            Map<String, Object> payload = new HashMap<>();
+            Map<String, List<Object>> payload = new HashMap<>();
             if (variables != null && !variables.isEmpty()) {
-                payload.put("variables", variables);
+                payload.put("stages_list", new ArrayList<>(variables));
             }
             
             String jsonPayload = objectMapper.writeValueAsString(payload);
@@ -96,7 +99,7 @@ public class BonitaApiService {
             
             // Convertir respuesta a Map
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
-            Map<String, Object> result = objectMapper.convertValue(jsonNode, Map.class);
+            Map<String, List<Object>> result = objectMapper.convertValue(jsonNode, Map.class);
             
             System.out.println("Proceso iniciado exitosamente. Instance ID: " + result.get("id"));
             return result;
