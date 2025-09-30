@@ -110,19 +110,7 @@
                                 placeholder="Nombre de la etapa"
                             >
                         </div>
-                        
-                        <div class="form-group col-md-6">
-                            <label [for]="'stageNeeds' + i">Necesidades *</label>
-                            <input
-                                type="text"
-                                [id]="'stageNeeds' + i"
-                                [name]="'stageNeeds' + i"
-                                [(ngModel)]="stage.needs"
-                                required
-                                class="form-control"
-                                placeholder="¿Qué se necesita para esta etapa?"
-                            >
-                        </div>
+
                     </div>
                     
                     <div class="form-row">
@@ -157,14 +145,30 @@
                     <div class="form-group">
                         <label class="checkbox-label">
                             <input
-                                type="checkbox"
-                                [name]="'stageCovered' + i"
-                                [(ngModel)]="stage.covered"
-                                class="form-checkbox"
-                            >
+                                    type="checkbox"
+                                    [name]="'stageCovered' + i"
+                                    [(ngModel)]="stage.covered"
+                                    (change)="toggleCovered(stage)"
+                                    class="form-checkbox"
+                            />
                             Esta etapa ya está cubierta
                         </label>
                     </div>
+
+                    <div *ngIf="!stage.covered" class="form-group col-md-6">
+                        <label [for]="'stageNeeds' + i">Necesidades *</label>
+                        <input
+                                type="text"
+                                [id]="'stageNeeds' + i"
+                                [name]="'stageNeeds' + i"
+                                [ngModel]="stage.needs ? stage.needs.description : ''"
+                                (ngModelChange)="stage.needs = { description: $event }"
+                                required
+                                class="form-control"
+                                placeholder="¿Qué se necesita para esta etapa?"
+                        >
+                    </div>
+
                 </div>
             </div>
             

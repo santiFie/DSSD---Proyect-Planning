@@ -35,7 +35,7 @@ public class Proyect {
     @Column(nullable = true)
     private String neighborhood;
 
-    @OneToMany(mappedBy = "proyect", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "proyect", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<Stage> stages = new ArrayList<>();
 

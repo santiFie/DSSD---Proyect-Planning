@@ -66,7 +66,7 @@ export class ProjectFormComponent implements OnInit {
   addStage(): void {
     const newStage: Stage = {
       name: '',
-      needs: '',
+      needs: null,
       covered: false,
       startDate: this.project.startDate || '',
       endDate: ''
@@ -77,6 +77,12 @@ export class ProjectFormComponent implements OnInit {
   removeStage(index: number): void {
     if (index >= 0 && index < this.project.stages.length) {
       this.project.stages.splice(index, 1);
+    }
+  }
+
+  toggleCovered(stage: Stage) {
+    if (stage.covered) {
+      stage.needs = null; // borra la necesidad si está cubierta
     }
   }
 

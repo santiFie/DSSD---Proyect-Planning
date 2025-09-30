@@ -24,8 +24,8 @@ public class Stage {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, length = 500)
-    private String needs;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Need needs;
 
     @Column(nullable = false)
     @Builder.Default
@@ -56,6 +56,5 @@ public class Stage {
         revisions.remove(revision);
         revision.setStage(null);
     }
-
 
 }
