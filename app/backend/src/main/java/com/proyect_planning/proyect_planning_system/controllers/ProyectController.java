@@ -48,9 +48,16 @@ public class ProyectController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createProject(@RequestBody NewProjectDto newProjectDto) {
+
+        System.out.println("Creando proyecto: " + newProjectDto.getName());
+        System.out.println("Stages: " + newProjectDto.getStages().stream().map(s -> s.getName()).collect(Collectors.toList()));
+
         try {
             // Crear el proyecto en la base de datos primero
             Proyect project = proyectService.createProject(newProjectDto);
+
+            System.out.println("Creando proyecto en entidad: " + project.getName());
+            System.out.println("Stages en entidad: " + project.getStages().stream().map(s -> s.getName()).collect(Collectors.toList()));
             
             // Preparar respuesta exitosa (sin Bonita por ahora)
             Map<String, Object> response = new HashMap<>();
@@ -62,6 +69,8 @@ public class ProyectController {
             try {
                 // Autenticar con Bonita
                 authService.login();
+
+                System.out.println("Autenticado en Bonita");
                 
                 // Obtener el ID del proceso "Gestion Proyecto"
                 String processId = apiService.getProcessId("Gestion Proyecto");

@@ -32,7 +32,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/myappdb
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
-      BONITA_SERVER_URL: http://host.docker.internal:8080/bonita
+      BONITA_SERVER_URL: http://host.docker.internal:57960/bonita
     ports:
       - "8081:8081"
     depends_on:

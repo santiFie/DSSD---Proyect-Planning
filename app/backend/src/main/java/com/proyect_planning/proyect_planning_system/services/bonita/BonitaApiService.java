@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class BonitaApiService {
@@ -76,16 +77,31 @@ public class BonitaApiService {
      * Inicia una nueva instancia de proceso en Bonita
      */
     public Map<String, List<Object>> startProcessInstance(String processId, List<Stage> variables) {
+        System.out.println("Iniciando proceso Bonita: " + processId + " con " + (variables != null ? variables.size() : 0) + " etapas.");
         try {
             HttpHeaders headers = authService.createAuthenticatedHeaders();
             
             // Preparar el payload para iniciar el proceso
-            Map<String, List<Object>> payload = new HashMap<>();
+            Map<String, Object> payload = new HashMap<>();
             if (variables != null && !variables.isEmpty()) {
-                payload.put("stages_list", new ArrayList<>(variables));
+                List<Map<String, Object>> stagesPayload = new ArrayList<>();
+                    for (Stage stage: variables) {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("id", stage.getId());
+                        map.put("name", stage.getName());
+                        map.put("needs", stage.getNeeds() != null ? stage.getNeeds().getDescription() : "");
+                        map.put("covered", stage.getCovered());
+                        map.put("startDate", stage.getStartDate());
+                        map.put("endDate", stage.getEndDate());
+                        stagesPayload.add(map);
+                    }
+                payload.put("stages_list", stagesPayload);
+
+                System.out.println("Iniciando proceso con stages_list: " + variables.size() + " etapas.");
             }
             
             String jsonPayload = objectMapper.writeValueAsString(payload);
+            System.out.println("Payload JSON: " + jsonPayload);
             HttpEntity<String> requestEntity = new HttpEntity<>(jsonPayload, headers);
             
             String url = bonitaConfig.getApiUrl() + "/bpm/process/" + processId + "/instantiation";
