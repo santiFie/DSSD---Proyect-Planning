@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:15
     container_name: postgres_db
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
@@ -15,7 +15,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
-    restart: always
+    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -27,12 +27,12 @@ services:
   backend:
     build: ./backend
     container_name: java_backend
-    restart: always
+    restart: unless-stopped
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/myappdb
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
-      BONITA_SERVER_URL: http://host.docker.internal:8080/bonita
+      BONITA_SERVER_URL: http://host.docker.internal:49649/bonita
     ports:
       - "8081:8081"
     depends_on:
@@ -43,7 +43,7 @@ services:
   frontend:
     build: ./frontend
     container_name: angular_frontend
-    restart: always
+    restart: unless-stopped
     ports:
       - "4200:80"
     volumes:
