@@ -1,11 +1,15 @@
 package com.proyect_planning.proyect_planning_system.controllers;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +31,7 @@ import com.proyect_planning.proyect_planning_system.dtos.ProyectDto;
 import com.proyect_planning.proyect_planning_system.entities.Proyect;
 import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.repositories.ProyectRepository;
+import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.services.ProyectService;
 
 @RestController
@@ -34,17 +39,13 @@ import com.proyect_planning.proyect_planning_system.services.ProyectService;
 @CrossOrigin(origins = "http://localhost:4200")
 public class ProyectController {
 
+    private final Logger logger = LoggerFactory.getLogger(ProyectController.class);
+
     @Autowired
     private ProyectService proyectService;
 
     @Autowired
-    private ProyectRepository proyectRepository;
-
-    @Autowired
-    private BonitaAuthService authService;
-
-    @Autowired
-    private BonitaApiService apiService;
+    private BonitaApiService bonitaSvc;
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createProject(@RequestBody NewProjectDto newProjectDto) {
@@ -58,7 +59,7 @@ public class ProyectController {
 
             System.out.println("Creando proyecto en entidad: " + project.getName());
             System.out.println("Stages en entidad: " + project.getStages().stream().map(s -> s.getName()).collect(Collectors.toList()));
-            
+
             // Preparar respuesta exitosa (sin Bonita por ahora)
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
@@ -67,27 +68,53 @@ public class ProyectController {
             
             // Intentar integración con Bonita (opcional)
             try {
-                // Autenticar con Bonita
-                authService.login();
-
-                System.out.println("Autenticado en Bonita");
                 
                 // Obtener el ID del proceso "Gestion Proyecto"
-                String processId = apiService.getProcessId("Gestion Proyecto");
+                String processId = bonitaSvc.getProcessId("Gestion Proyecto");
                 
                 if (processId != null) {
-                    // Para stages_list, crear una lista de objetos Stage
-                    List<Stage> stagesList = new ArrayList<>();
+                    // Preparar variables para el proceso
+                    Map<String, Object> processVariables = new HashMap<>();
+
+                    Map<String, Object> proyectoInput = new HashMap<>();
+                    proyectoInput.put("id", project.getId());
+                    proyectoInput.put("nombre", project.getName());
+                    proyectoInput.put("descripcion", project.getDescription());
+
+                    List<Map<String, Object>> etapasInput = new ArrayList<>();
                     if (project.getStages() != null) {
-                        project.getStages().forEach(stage -> stagesList.add(stage));
+                        for (int i = 0; i < project.getStages().size(); i++) {
+                            Stage stage = project.getStages().get(i);
+                            Map<String, Object> etapa = new HashMap<>();
+                            etapa.put("nro_orden", i + 1);
+                            etapa.put("requiere_pedido", stage.getCovered());
+                            etapa.put("desc_pedido", stage.getNeeds() != null ? stage.getNeeds() : "");
+                            etapa.put("estado","PENDIENTE");
+                            etapa.put("proyecto_id", project.getId());
+                            etapasInput.add(etapa);
+                        }
                     }
-                    
+                    processVariables.put("proyectoInput", proyectoInput);
+                    processVariables.put("etapasInput", etapasInput);
+
                     // Iniciar el proceso en Bonita
-                    Map<String, List<Object>> processInstance = apiService.startProcessInstance(processId, stagesList);
+                    Map<String, String> processInstance = bonitaSvc.startProcessInstance(processId, processVariables);
                     
+                    //Buscar tarea humana lista
+                    List<Map<String,String>> humanTasks = bonitaSvc.getTasksByCaseId(processInstance.get("caseId"));
+
+                    if(humanTasks != null && !humanTasks.isEmpty()) {
+                        //Ejecutar la primera tarea humana
+                        logger.debug("Tarea humana encontrada: {}", humanTasks.get(0));
+                        bonitaSvc.assignUserTask(humanTasks.get(0).get("id"), "4");
+                        bonitaSvc.executeTask(humanTasks.get(0).get("id"));
+                    }else{
+                        logger.error("No se encontraron tareas humanas para el caso ID: {}", processInstance.get("caseId"));
+                    }
+
                     // Actualizar respuesta con información de Bonita
                     response.put("message", "Proyecto y proceso Bonita creados exitosamente");
-                    response.put("bonita_process_id", processInstance.get("id"));
+                    response.put("bonita_process_id", processInstance.get("caseId"));
                     response.put("bonita_process_name", "Gestion Proyecto");
                     response.put("bonita_enabled", true);
                 } else {
@@ -95,7 +122,7 @@ public class ProyectController {
                     response.put("bonita_enabled", false);
                 }
             } catch (Exception bonitaError) {
-                System.out.println("Bonita no disponible: " + bonitaError.getMessage());
+                logger.error("Bonita error", bonitaError);
                 response.put("message", "Proyecto creado exitosamente (Bonita no disponible)");
                 response.put("bonita_enabled", false);
             }
@@ -103,7 +130,7 @@ public class ProyectController {
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            System.err.println("Error creando proyecto: " + e.getMessage());
+            logger.error("Error creando proyecto ", e);
             
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", "error");

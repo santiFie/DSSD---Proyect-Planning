@@ -77,9 +77,9 @@ public class BonitaController {
     @PostMapping("/processes/{processId}/start")
     public ResponseEntity<?> startProcess(
             @PathVariable String processId,
-            @RequestBody(required = false) List<Stage> variables) {
+            @RequestBody(required = false) Map<String, Object> variables) {
         try {
-            Map<String, List<Object>> instance = apiService.startProcessInstance(processId, variables);
+            Map<String, String> instance = apiService.startProcessInstance(processId, variables);
             return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Proceso iniciado exitosamente",
@@ -115,7 +115,7 @@ public class BonitaController {
     @GetMapping("/tasks")
     public ResponseEntity<?> getPendingTasks(@RequestParam(defaultValue = "1") String userId) {
         try {
-            List<Map<String, Object>> tasks = apiService.getPendingTasks(userId);
+            List<Map<String, Object>> tasks = apiService.getPendingTasksByUserId(userId);
             return ResponseEntity.ok(tasks);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(
@@ -129,11 +129,9 @@ public class BonitaController {
      * Endpoint para ejecutar una tarea
      */
     @PostMapping("/tasks/{taskId}/execute")
-    public ResponseEntity<?> executeTask(
-            @PathVariable String taskId,
-            @RequestBody(required = false) Map<String, Object> taskData) {
+    public ResponseEntity<?> executeTask(@PathVariable String taskId) {
         try {
-            apiService.executeTask(taskId, taskData);
+            apiService.executeTask(taskId);
             return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Tarea ejecutada exitosamente"
