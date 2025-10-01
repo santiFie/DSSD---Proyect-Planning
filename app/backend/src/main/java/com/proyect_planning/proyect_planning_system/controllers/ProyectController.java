@@ -79,6 +79,8 @@ public class ProyectController {
                     Map<String, Object> proyectoInput = new HashMap<>();
                     proyectoInput.put("id", project.getId());
                     proyectoInput.put("nombre", project.getName());
+                    proyectoInput.put("fecha_inicio", project.getStartDate());
+                    proyectoInput.put("tipo_proyecto", "");
                     proyectoInput.put("descripcion", project.getDescription());
 
                     List<Map<String, Object>> etapasInput = new ArrayList<>();
@@ -86,16 +88,22 @@ public class ProyectController {
                         for (int i = 0; i < project.getStages().size(); i++) {
                             Stage stage = project.getStages().get(i);
                             Map<String, Object> etapa = new HashMap<>();
+                            etapa.put("persistenceId_string", stage.getId().toString());
                             etapa.put("nro_orden", i + 1);
-                            etapa.put("requiere_pedido", stage.getCovered());
-                            etapa.put("desc_pedido", stage.getNeeds() != null ? stage.getNeeds() : "");
-                            etapa.put("estado","PENDIENTE");
+                            etapa.put("nombre", stage.getName());
+                            etapa.put("fecha_inicio", stage.getStartDate());
+                            etapa.put("fecha_fin", stage.getEndDate() != null ? stage.getEndDate() : null);
+                            etapa.put("requiere_pedido", !stage.getCovered());
+                            etapa.put("desc_pedido", stage.getNeeds() != null ? stage.getNeeds().getDescription() : "");
+                            etapa.put("estado", "PENDIENTE");
                             etapa.put("proyecto_id", project.getId());
                             etapasInput.add(etapa);
                         }
                     }
                     processVariables.put("proyectoInput", proyectoInput);
                     processVariables.put("etapasInput", etapasInput);
+
+                    System.out.println("Variables para Bonita: " + processVariables);
 
                     // Iniciar el proceso en Bonita
                     Map<String, String> processInstance = bonitaSvc.startProcessInstance(processId, processVariables);

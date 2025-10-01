@@ -18,6 +18,7 @@ export interface Project {
   description: string;
   startDate: string;
   endDate: string;
+  neighborhood?: string;
   stages: Stage[];
 }
 
@@ -26,5 +27,6 @@ export interface NewProjectDto {
   description: string;
   startDate: string;
   endDate: string;
+  neighborhood?: string;
   stages: Stage[];
 }
