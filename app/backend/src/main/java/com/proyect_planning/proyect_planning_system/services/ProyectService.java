@@ -92,4 +92,8 @@ public class ProyectService {
         return proyectRepository.save(proyect);
     }
 
+    public Proyect updateProyect(Proyect proyect) {
+        return proyectRepository.save(proyect);
+    }
+
 }

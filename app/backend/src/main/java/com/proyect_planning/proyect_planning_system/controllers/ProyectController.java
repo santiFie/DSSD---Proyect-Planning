@@ -1,12 +1,9 @@
 package com.proyect_planning.proyect_planning_system.controllers;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaApiService;
-import com.proyect_planning.proyect_planning_system.services.bonita.BonitaAuthService;
-
 import jakarta.transaction.Transactional;
 
 import com.proyect_planning.proyect_planning_system.dtos.NewProjectDto;
 import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
 import com.proyect_planning.proyect_planning_system.dtos.ProyectDto;
 import com.proyect_planning.proyect_planning_system.entities.Proyect;
-import com.proyect_planning.proyect_planning_system.entities.Stage;
-import com.proyect_planning.proyect_planning_system.repositories.ProyectRepository;
 import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.services.ProyectService;
 
@@ -50,15 +43,15 @@ public class ProyectController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> createProject(@RequestBody NewProjectDto newProjectDto) {
 
-        System.out.println("Creando proyecto: " + newProjectDto.getName());
-        System.out.println("Stages: " + newProjectDto.getStages().stream().map(s -> s.getName()).collect(Collectors.toList()));
+        logger.debug("Creando proyecto: {}", newProjectDto.getName());
+        logger.debug("Stages: {}", newProjectDto.getStages().stream().toList());
 
         try {
             // Crear el proyecto en la base de datos primero
             Proyect project = proyectService.createProject(newProjectDto);
 
-            System.out.println("Creando proyecto en entidad: " + project.getName());
-            System.out.println("Stages en entidad: " + project.getStages().stream().map(s -> s.getName()).collect(Collectors.toList()));
+            logger.debug("Creando proyecto en entidad: {}", project.getName());
+            logger.debug("Stages en entidad: {}", project.getStages().stream().toList());
 
             // Preparar respuesta exitosa (sin Bonita por ahora)
             Map<String, Object> response = new HashMap<>();
@@ -88,7 +81,6 @@ public class ProyectController {
                         for (int i = 0; i < project.getStages().size(); i++) {
                             Stage stage = project.getStages().get(i);
                             Map<String, Object> etapa = new HashMap<>();
-                            etapa.put("persistenceId_string", stage.getId().toString());
                             etapa.put("nro_orden", i + 1);
                             etapa.put("nombre", stage.getName());
                             etapa.put("fecha_inicio", stage.getStartDate());
@@ -103,7 +95,7 @@ public class ProyectController {
                     processVariables.put("proyectoInput", proyectoInput);
                     processVariables.put("etapasInput", etapasInput);
 
-                    System.out.println("Variables para Bonita: " + processVariables);
+                    logger.info("Variables para Bonita {} ", processVariables);
 
                     // Iniciar el proceso en Bonita
                     Map<String, String> processInstance = bonitaSvc.startProcessInstance(processId, processVariables);
@@ -119,6 +111,10 @@ public class ProyectController {
                     }else{
                         logger.error("No se encontraron tareas humanas para el caso ID: {}", processInstance.get("caseId"));
                     }
+
+                    // Guardar el ID del caso de Bonita en el proyecto
+                    project.setBonitaCaseId(processInstance.get("caseId"));
+                    proyectService.updateProyect(project);
 
                     // Actualizar respuesta con información de Bonita
                     response.put("message", "Proyecto y proceso Bonita creados exitosamente");

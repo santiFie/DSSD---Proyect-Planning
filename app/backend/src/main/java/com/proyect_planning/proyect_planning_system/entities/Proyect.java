@@ -39,6 +39,9 @@ public class Proyect {
     @Builder.Default
     private List<Stage> stages = new ArrayList<>();
 
+    @Column
+    private String bonitaCaseId;
+
     public void addStage(Stage stage) {
         stages.add(stage);
         stage.setProyect(this);

@@ -20,6 +20,8 @@ public class Need {
     @Column(nullable = false, length = 500)
     private String description;
 
-    @OneToOne(mappedBy = "needs")
-    private Stage stage;
+    /*@OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "stage_id", referencedColumnName = "id")
+    private Stage stage;*/
+
 }
