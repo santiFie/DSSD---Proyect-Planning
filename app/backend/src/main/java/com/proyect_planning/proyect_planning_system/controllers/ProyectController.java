@@ -58,13 +58,13 @@ public class ProyectController {
             response.put("status", "success");
             response.put("message", "Proyecto creado exitosamente");
             response.put("project", ProyectDto.fromEntity(project));
-            
+
             // Intentar integración con Bonita (opcional)
             try {
-                
+
                 // Obtener el ID del proceso "Gestion Proyecto"
                 String processId = bonitaSvc.getProcessId("Gestion Proyecto");
-                
+
                 if (processId != null) {
                     // Preparar variables para el proceso
                     Map<String, Object> processVariables = new HashMap<>();
@@ -99,26 +99,26 @@ public class ProyectController {
 
                     // Iniciar el proceso en Bonita
                     Map<String, String> processInstance = bonitaSvc.startProcessInstance(processId, processVariables);
-                    
-                    //Buscar tarea humana lista
-                    List<Map<String,String>> humanTasks = bonitaSvc.getTasksByCaseId(processInstance.get("caseId"));
+                    String caseId = processInstance.get("caseId");
+                    // Buscar tarea humana lista
+                    List<Map<String, String>> humanTasks = bonitaSvc.getTasksByCaseId(caseId);
 
-                    if(humanTasks != null && !humanTasks.isEmpty()) {
-                        //Ejecutar la primera tarea humana
-                        logger.debug("Tarea humana encontrada: {}", humanTasks.get(0));
+                    if (humanTasks != null && !humanTasks.isEmpty()) {
+                        // Ejecutar la primera tarea humana
+                        logger.info("Tarea humana encontrada: {}", humanTasks.get(0));
                         bonitaSvc.assignUserTask(humanTasks.get(0).get("id"), "4");
                         bonitaSvc.executeTask(humanTasks.get(0).get("id"));
-                    }else{
-                        logger.error("No se encontraron tareas humanas para el caso ID: {}", processInstance.get("caseId"));
-                    }
+                    } else {
+                        logger.error("No se encontraron tareas humanas para el caso ID: {}", caseId);
+                    }                    
 
                     // Guardar el ID del caso de Bonita en el proyecto
-                    project.setBonitaCaseId(processInstance.get("caseId"));
+                    project.setBonitaCaseId(caseId);
                     proyectService.updateProyect(project);
 
                     // Actualizar respuesta con información de Bonita
                     response.put("message", "Proyecto y proceso Bonita creados exitosamente");
-                    response.put("bonita_process_id", processInstance.get("caseId"));
+                    response.put("bonita_process_id", caseId);
                     response.put("bonita_process_name", "Gestion Proyecto");
                     response.put("bonita_enabled", true);
                 } else {
@@ -130,16 +130,16 @@ public class ProyectController {
                 response.put("message", "Proyecto creado exitosamente (Bonita no disponible)");
                 response.put("bonita_enabled", false);
             }
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             logger.error("Error creando proyecto ", e);
-            
+
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", "error");
             errorResponse.put("message", "Error creando proyecto: " + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
