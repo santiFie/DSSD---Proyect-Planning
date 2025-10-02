@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +111,7 @@ public class ProyectController {
                         bonitaSvc.executeTask(humanTasks.get(0).get("id"));
                     } else {
                         logger.error("No se encontraron tareas humanas para el caso ID: {}", caseId);
-                    }                    
+                    }
 
                     // Guardar el ID del caso de Bonita en el proyecto
                     project.setBonitaCaseId(caseId);
@@ -133,6 +134,14 @@ public class ProyectController {
 
             return ResponseEntity.ok(response);
 
+        } catch (IllegalArgumentException iae) {
+            logger.warn("Invalid input data: {}", iae.getMessage());
+
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Datos invalidos: " + iae.getMessage());
+
+            return ResponseEntity.badRequest().body(errorResponse);
         } catch (Exception e) {
             logger.error("Error creando proyecto ", e);
 

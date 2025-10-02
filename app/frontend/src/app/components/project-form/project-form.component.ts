@@ -107,9 +107,17 @@ export class ProjectFormComponent implements OnInit {
           this.router.navigate(['/projects']);
         }, 1500);
       },
-      error: (error) => {
-        console.error('Error saving project:', error);
-        this.error = `Error al ${this.isEdit ? 'actualizar' : 'crear'} el proyecto.`;
+      error: (err) => {
+        console.error('Error saving project:', err);
+
+        if (err.error && err.error.message) {
+          this.error = err.error.message;
+        } else if (err.message) {
+          this.error = err.message;
+        } else {
+          this.error = `Error al ${this.isEdit ? 'actualizar' : 'crear'} el proyecto.`;
+        }
+
         this.loading = false;
       }
     });

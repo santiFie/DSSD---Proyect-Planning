@@ -1,5 +1,6 @@
 package com.proyect_planning.proyect_planning_system.services;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
@@ -29,7 +30,39 @@ public class ProyectService {
 
     public Proyect createProject(NewProjectDto newProjectDto) {
         if (proyectRepository.existsByName(newProjectDto.getName())) {
-            throw new IllegalArgumentException("A project with the same name already exists.");
+            throw new IllegalArgumentException("Ya existe un proyecto con ese nombre.");
+        }
+
+        // validate end date is after start date
+        if (newProjectDto.getEndDate() != null) {
+            try {
+                LocalDate end = LocalDate.parse(newProjectDto.getEndDate());
+                LocalDate start = newProjectDto.getStartDate() != null ? LocalDate.parse(newProjectDto.getStartDate()) : null;
+                if (start != null && end.isBefore(start)) {
+                    throw new IllegalArgumentException("La fecha de fin debe ser posterior a la de inicio.");
+                }
+            } catch (java.time.format.DateTimeParseException e) {
+                throw new IllegalArgumentException("Formato de fecha invalido, espera aaaa-MM-dd", e);
+            }
+        }
+
+        for (StageDto stageDto : newProjectDto.getStages()) {
+            // Validate end date is after start date for each stage and start date is equal or after project start date
+            if (stageDto.getEndDate() != null) {
+                try {
+                    LocalDate stageEnd = LocalDate.parse(stageDto.getEndDate());
+                    LocalDate stageStart = stageDto.getStartDate() != null ? LocalDate.parse(stageDto.getStartDate()) : null;
+                    LocalDate projectStart = newProjectDto.getStartDate() != null ? LocalDate.parse(newProjectDto.getStartDate()) : null;
+                    if (stageStart != null && stageEnd.isBefore(stageStart)) {
+                        throw new IllegalArgumentException("La fecha de fin debe ser posterior a la de inicio en la etapa.");
+                    }
+                    if (projectStart != null && stageStart != null && stageStart.isBefore(projectStart)) {
+                        throw new IllegalArgumentException("La fecha de inicio de la etapa debe ser igual o posterior a la de inicio del proyecto.");
+                    }
+                } catch (java.time.format.DateTimeParseException e) {
+                    throw new IllegalArgumentException("Formato de fecha invalido, espera aaaa-MM-dd", e);
+                }
+            }
         }
 
         Proyect proyect = Proyect.builder()
@@ -46,6 +79,23 @@ public class ProyectService {
         // Crear y agregar las etapas si existen
         if (newProjectDto.getStages() != null && !newProjectDto.getStages().isEmpty()) {
             for (StageDto stageDto : newProjectDto.getStages()) {
+                // Validate end date is after start date for each stage and start date is equal or after project start date
+                if (stageDto.getEndDate() != null) {
+                    try {
+                        LocalDate stageEnd = LocalDate.parse(stageDto.getEndDate());
+                        LocalDate stageStart = stageDto.getStartDate() != null ? LocalDate.parse(stageDto.getStartDate()) : null;
+                        LocalDate projectStart = proyect.getStartDate() != null ? LocalDate.parse(proyect.getStartDate()) : null;
+                        if (stageStart != null && stageEnd.isBefore(stageStart)) {
+                            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la de inicio en la etapa.");
+                        }
+                        if (projectStart != null && stageStart != null && stageStart.isBefore(projectStart)) {
+                            throw new IllegalArgumentException("La fecha de inicio de la etapa debe ser igual o posterior a la de inicio del proyecto.");
+                        }
+                    } catch (java.time.format.DateTimeParseException e) {
+                        throw new IllegalArgumentException("Formato de fecha invalido, espera aaaa-MM-dd", e);
+                    }
+                }
+
                 Stage stage = Stage.builder()
                         .name(stageDto.getName())
                         .needs(stageDto.getNeeds())
