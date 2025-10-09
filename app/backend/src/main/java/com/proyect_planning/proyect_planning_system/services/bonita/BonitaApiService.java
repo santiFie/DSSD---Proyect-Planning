@@ -191,17 +191,16 @@ public class BonitaApiService {
     }
 
     /**
-     * Ejecuta una tarea humana
+     * Ejecuta una tarea humana y asigna al usuario logueado (usuario de aplicación)
      *
-     * @throws BonitaException
+     * @throws BonitaException Ante un error en la comunicación con Bonita
      */
-    public void executeTask(String taskId) throws BonitaException {
+    public void executeTask(String taskId, Map<String, Object> taskData) throws BonitaException {
         try {
             HttpHeaders headers = authService.createAuthenticatedHeaders();
-            HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-
-            String url = bonitaConfig.getApiUrl() + "/bpm/userTask/" + taskId + "/execution";
-
+            String jsonPayload = (taskData != null) ? objectMapper.writeValueAsString(taskData) : "{}";
+            HttpEntity<String> requestEntity = new HttpEntity<>(jsonPayload, headers);
+            String url = bonitaConfig.getApiUrl() + "/bpm/userTask/" + taskId + "/execution?assign=true";
             restTemplate.exchange(
                     url,
                     HttpMethod.POST,
@@ -218,9 +217,10 @@ public class BonitaApiService {
 
     /**
      * Asigna una tarea a un usuario específico
-     * 
-     * @throws BonitaException
+     * @deprecated Usar executeTask en su lugar, porque asigna al usuario logueado
+     * @throws BonitaException Ante un error en la comunicación con Bonita
      */
+    @Deprecated (since = "2025-10-09", forRemoval = true)
     public String assignUserTask(String taskId, String userId) throws BonitaException {
         try {
             HttpHeaders headers = authService.createAuthenticatedHeaders();
@@ -247,9 +247,9 @@ public class BonitaApiService {
     }
 
     /**
-     * Obtiene las tareas en estado listo, para un caso específico
+     * Obtiene las tareas humanas para un caso específico
      *
-     * @throws BonitaException
+     * @throws BonitaException Ante un error en la comunicación con Bonita
      */
     public List<Map<String, String>> getTasksByCaseId(String caseId) throws BonitaException {
         try {

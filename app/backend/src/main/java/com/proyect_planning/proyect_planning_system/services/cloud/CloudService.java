@@ -1,0 +1,85 @@
+package com.proyect_planning.proyect_planning_system.services.cloud;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.proyect_planning.proyect_planning_system.services.cloud.dto.PedidoCloudDTO;
+import com.proyect_planning.proyect_planning_system.services.cloud.dto.UserCloudDTO;
+import com.proyect_planning.proyect_planning_system.services.cloud.exceptions.CloudException;
+
+@Service
+public class CloudService {
+    private Logger logger = LoggerFactory.getLogger(CloudService.class);
+    private final RestTemplate restTemplate;
+    private static final String CLOUD_BASE_URL = "http://localhost:8080/Dssd2025Cloud";
+    private static final String CLOUD_USER = "USER_WEBAPP";
+    private static final String CLOUD_PASS = "Dssd2025@Webapp";
+
+    public CloudService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    /**
+     * Obtiene los headers autenticados para realizar peticiones a la API de cloud
+     * 
+     * @return HttpHeaders con el token de autenticación
+     * @throws CloudException si hay un error al autenticarse
+     */
+    private HttpHeaders getAuthenticatedHeaders() throws CloudException {
+        HttpHeaders headers = new HttpHeaders();
+        String jwtToken = "";
+        Map<String, String> authPayload = new HashMap<>();
+        authPayload.put("username", CLOUD_USER);
+        authPayload.put("password", CLOUD_PASS);
+        headers.set("Content-Type", "application/json");
+        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(authPayload, headers);
+        ResponseEntity<UserCloudDTO> response = restTemplate.exchange(CLOUD_BASE_URL + "/api/v1/auth/login",
+                HttpMethod.POST,
+                requestEntity, UserCloudDTO.class);
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
+                && response.getBody().getToken() != null) {
+            jwtToken = response.getBody().getToken().getToken();
+        } else {
+            logger.error("Error al loguearse en cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
+                    response.getBody());
+            throw new CloudException("Error al loguearse en cloud (ver logs)");
+        }
+        headers.set("Authorization", jwtToken);
+        return headers;
+    }
+
+    /**
+     * Obtiene todos los pedidos desde la API de cloud
+     * 
+     * @return Lista de pedidos
+     * @throws CloudException si hay un error al obtener los pedidos
+     */
+    public List<PedidoCloudDTO> getAllPedidos() throws CloudException {
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+        ResponseEntity<List<PedidoCloudDTO>> response = restTemplate.exchange(CLOUD_BASE_URL + "/api/v1/pedidos",
+                HttpMethod.GET,
+                requestEntity, new ParameterizedTypeReference<List<PedidoCloudDTO>>() {
+                });
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return response.getBody();
+        } else {
+            logger.error("Error al obtener pedidos de cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
+                    response.getBody());
+            throw new CloudException("Error al obtener pedidos de cloud (ver logs)");
+        }
+    }
+
+}

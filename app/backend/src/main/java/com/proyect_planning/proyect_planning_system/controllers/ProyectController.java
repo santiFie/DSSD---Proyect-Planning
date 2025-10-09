@@ -1,11 +1,8 @@
 package com.proyect_planning.proyect_planning_system.controllers;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +15,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import com.proyect_planning.proyect_planning_system.services.bonita.BonitaApiService;
+import com.proyect_planning.proyect_planning_system.services.bonita.BonitaBusinessService;
+
 import jakarta.transaction.Transactional;
 
 import com.proyect_planning.proyect_planning_system.dtos.NewProjectDto;
 import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
 import com.proyect_planning.proyect_planning_system.dtos.ProyectDto;
 import com.proyect_planning.proyect_planning_system.entities.Proyect;
-import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.services.ProyectService;
 
 @RestController
@@ -39,7 +36,7 @@ public class ProyectController {
     private ProyectService proyectService;
 
     @Autowired
-    private BonitaApiService bonitaSvc;
+    private BonitaBusinessService bonitaBusinessSvc;
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createProject(@RequestBody NewProjectDto newProjectDto) {
@@ -62,57 +59,8 @@ public class ProyectController {
 
             // Intentar integración con Bonita (opcional)
             try {
-
-                // Obtener el ID del proceso "Gestion Proyecto"
-                String processId = bonitaSvc.getProcessId("Gestion Proyecto");
-
-                if (processId != null) {
-                    // Preparar variables para el proceso
-                    Map<String, Object> processVariables = new HashMap<>();
-
-                    Map<String, Object> proyectoInput = new HashMap<>();
-                    proyectoInput.put("id", project.getId());
-                    proyectoInput.put("nombre", project.getName());
-                    proyectoInput.put("fecha_inicio", project.getStartDate());
-                    proyectoInput.put("tipo_proyecto", "");
-                    proyectoInput.put("descripcion", project.getDescription());
-
-                    List<Map<String, Object>> etapasInput = new ArrayList<>();
-                    if (project.getStages() != null) {
-                        for (int i = 0; i < project.getStages().size(); i++) {
-                            Stage stage = project.getStages().get(i);
-                            Map<String, Object> etapa = new HashMap<>();
-                            etapa.put("nro_orden", i + 1);
-                            etapa.put("nombre", stage.getName());
-                            etapa.put("fecha_inicio", stage.getStartDate());
-                            etapa.put("fecha_fin", stage.getEndDate() != null ? stage.getEndDate() : null);
-                            etapa.put("requiere_pedido", !stage.getCovered());
-                            etapa.put("desc_pedido", stage.getNeeds() != null ? stage.getNeeds().getDescription() : "");
-                            etapa.put("estado", "PENDIENTE");
-                            etapa.put("proyecto_id", project.getId());
-                            etapasInput.add(etapa);
-                        }
-                    }
-                    processVariables.put("proyectoInput", proyectoInput);
-                    processVariables.put("etapasInput", etapasInput);
-
-                    logger.info("Variables para Bonita {} ", processVariables);
-
-                    // Iniciar el proceso en Bonita
-                    Map<String, String> processInstance = bonitaSvc.startProcessInstance(processId, processVariables);
-                    String caseId = processInstance.get("caseId");
-                    // Buscar tarea humana lista
-                    List<Map<String, String>> humanTasks = bonitaSvc.getTasksByCaseId(caseId);
-
-                    if (humanTasks != null && !humanTasks.isEmpty()) {
-                        // Ejecutar la primera tarea humana
-                        logger.info("Tarea humana encontrada: {}", humanTasks.get(0));
-                        bonitaSvc.assignUserTask(humanTasks.get(0).get("id"), "4");
-                        bonitaSvc.executeTask(humanTasks.get(0).get("id"));
-                    } else {
-                        logger.error("No se encontraron tareas humanas para el caso ID: {}", caseId);
-                    }
-
+                String caseId = bonitaBusinessSvc.registrarProyecto(project);
+                if (caseId != null) {
                     // Guardar el ID del caso de Bonita en el proyecto
                     project.setBonitaCaseId(caseId);
                     proyectService.updateProyect(project);

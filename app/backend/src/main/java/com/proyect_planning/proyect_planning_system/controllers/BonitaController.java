@@ -131,7 +131,7 @@ public class BonitaController {
     @PostMapping("/tasks/{taskId}/execute")
     public ResponseEntity<?> executeTask(@PathVariable String taskId) {
         try {
-            apiService.executeTask(taskId);
+            apiService.executeTask(taskId, null);
             return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Tarea ejecutada exitosamente"
