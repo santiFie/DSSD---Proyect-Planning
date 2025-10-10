@@ -1,0 +1,31 @@
+<div class="pedido-list">
+  <h2>Pedidos del Cloud</h2>
+
+  <div *ngIf="loading">Cargando pedidos...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <table *ngIf="!loading && pedidos?.length" class="pedido-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of pedidos">
+        <td>{{ p.id }}</td>
+        <td>{{ p.title || '-' }}</td>
+        <td>{{ p.description || '-' }}</td>
+        <td>{{ p.status || '-' }}</td>
+        <td>
+          <button (click)="brindarAyuda(p)">Brindar Ayuda</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && (!pedidos || pedidos.length === 0)">No hay pedidos.</div>
+</div>
