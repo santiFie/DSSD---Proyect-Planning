@@ -127,6 +127,6 @@ public class ProyectController {
     @PutMapping("/{id}/addStage")
     public ResponseEntity<Proyect> addStageToProject(@PathVariable Long id, @RequestBody NewStageDto newStageDto) {
         Proyect updatedProject = proyectService.addStageToProject(id, newStageDto);
-        return ResponseEntity.ok(updatedProject);
+        return ResponseEntity.ok(updatedProject);   
     }
 }

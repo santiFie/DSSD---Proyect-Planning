@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { Pedido } from '../../models/pedido.model';
 import { PedidoService } from '../../services/pedido.service';
 
 @Component({
   selector: 'app-pedido-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './pedido-list.component.html',
   styleUrls: ['./pedido-list.component.scss']
 })
@@ -31,14 +32,9 @@ export class PedidoListComponent implements OnInit {
   }
 
   brindarAyuda(p: Pedido): void {
-    // optimistically mark as helping
-    this.pedidoService.helpPedido(p.id).subscribe({
-      next: res => {
-        console.log('Ayuda brindada', res);
-        // optionally refresh list or update status locally
-        this.loadPedidos();
-      },
-      error: err => { console.error('Error al brindar ayuda', err); alert('Error al brindar ayuda'); }
-    });
+    // Redirigir al formulario de compromiso
+    console.log('Redirigiendo al formulario de compromiso para pedido:', p.id);
+    // Aquí podrías implementar la navegación si tienes Router inyectado
+    // this.router.navigate(['/compromisos/new', p.id]);
   }
 }

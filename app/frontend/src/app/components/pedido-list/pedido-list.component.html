@@ -8,7 +8,7 @@
     <thead>
       <tr>
         <th>ID</th>
-        <th>Título</th>
+        <th>ID de proyecto</th>
         <th>Descripción</th>
         <th>Estado</th>
         <th>Acciones</th>
@@ -17,11 +17,11 @@
     <tbody>
       <tr *ngFor="let p of pedidos">
         <td>{{ p.id }}</td>
-        <td>{{ p.title || '-' }}</td>
-        <td>{{ p.description || '-' }}</td>
-        <td>{{ p.status || '-' }}</td>
+        <td>{{ p.proyectoId || '-' }}</td>
+        <td>{{ p.descripcion || '-' }}</td>
+        <td>{{ p.estado || '-' }}</td>
         <td>
-          <button (click)="brindarAyuda(p)">Brindar Ayuda</button>
+          <a routerLink="/compromisos/new/{{ p.id }}">Brindar ayuda</a>
         </td>
       </tr>
     </tbody>

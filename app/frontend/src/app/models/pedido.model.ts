@@ -1,8 +1,8 @@
 export interface Pedido {
   id: number;
-  title?: string;
-  description?: string;
-  status?: string;
+  proyectoId?: string;
+  descripcion?: string;
+  estado?: string;
   createdAt?: string; // ISO date
   [key: string]: any;
 }
