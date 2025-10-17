@@ -52,4 +52,8 @@ public class Proyect {
         stage.setProyect(null);
     }
 
+    public String getBonitaCaseId() {
+        return bonitaCaseId;
+    }
+
 }
