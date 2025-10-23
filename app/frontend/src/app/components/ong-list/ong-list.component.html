@@ -1,0 +1,78 @@
+<div class="ong-list-container">
+  <div class="header">
+    <h1>🏢 Gestión de ONGs</h1>
+    <button class="btn-primary" (click)="toggleCreateForm()">
+      {{ showCreateForm ? '❌ Cancelar' : '➕ Nueva ONG' }}
+    </button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">
+    ✅ {{ successMessage }}
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage && !showCreateForm">
+    ⚠️ {{ errorMessage }}
+  </div>
+
+  <div class="create-form-card" *ngIf="showCreateForm">
+    <h2>Crear Nueva ONG</h2>
+    
+    <form (ngSubmit)="createOng()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Nombre de la ONG *</label>
+          <input
+            type="text"
+            id="name"
+            [(ngModel)]="newOng.name"
+            name="name"
+            placeholder="Ej: Cruz Roja Internacional"
+            required
+            [disabled]="loading"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="originCountry">País de Origen *</label>
+          <input
+            type="text"
+            id="originCountry"
+            [(ngModel)]="newOng.originCountry"
+            name="originCountry"
+            placeholder="Ej: Suiza"
+            required
+            [disabled]="loading"
+          />
+        </div>
+      </div>
+
+      <div class="alert alert-error" *ngIf="errorMessage">
+        ⚠️ {{ errorMessage }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="toggleCreateForm()" [disabled]="loading">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="loading || !newOng.name || !newOng.originCountry">
+          {{ loading ? 'Creando...' : 'Crear ONG' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="ongs-grid">
+    <div class="ong-card" *ngFor="let ong of ongs">
+      <div class="ong-icon">🏢</div>
+      <div class="ong-info">
+        <h3>{{ ong.name }}</h3>
+        <p><strong>País:</strong> {{ ong.originCountry }}</p>
+        <p class="ong-id"><strong>ID:</strong> {{ ong.id }}</p>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="ongs.length === 0">
+      <p>No hay ONGs registradas</p>
+    </div>
+  </div>
+</div>

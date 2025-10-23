@@ -22,7 +22,14 @@ export class PedidoService {
   }
 
   createCompromiso(id: number, compromiso: NewCompromisoDto, proyectId: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/compromisos`, { compromiso, proyectId });
-  }
+    // Crear un nuevo objeto con proyectId incluido
+    const payload = {
+      ...compromiso,
+      proyectId: proyectId
+    };
+    
+    return this.http.post<any>(`${this.apiUrl}/${id}/compromisos`, payload);
+}
+
 
 }
