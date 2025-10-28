@@ -1,6 +1,10 @@
 <div class="project-list">
     <h2>Lista de Proyectos</h2>
-    
+
+    <button [routerLink]="['/projects/new']" class="btn btn-primary create-project-btn">
+        Crear un nuevo proyecto
+    </button>
+
     <div *ngIf="loading" class="alert">
     Cargando proyectos...
     </div>

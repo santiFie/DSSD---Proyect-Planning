@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaBusinessService;
 import com.proyect_planning.proyect_planning_system.services.cloud.CloudService;
@@ -65,13 +66,15 @@ public class PedidosController {
     @CrossOrigin(origins = "*")
     public ResponseEntity<Map<String, Object>> crearCompromiso(
         @PathVariable Long pedidoId, 
-        @RequestBody NewCompromisoDto compromisoDto,
-        @RequestBody Long proyectId
+        @RequestBody NewCompromisoDto compromisoDto
         ) {
         
         logger.debug("Creando compromiso para pedido ID: {}", pedidoId);
-        logger.debug("Datos del compromiso: ONG ID: {}, Descripción: {}", 
-                    compromisoDto.getOngColaboranteId(), compromisoDto.getDescripcion());
+        logger.debug("Datos del compromiso: ONG ID: {}, Descripción: {}, ProyectId: {}", 
+        compromisoDto.getOngColaboranteId(), 
+        compromisoDto.getDescripcion(),
+        compromisoDto.getProyectId());  // ✅ Agregar log para proyectId
+    
         
         try {
             // Preparar respuesta exitosa inicial
@@ -83,7 +86,8 @@ public class PedidosController {
             
             try {
                 // Esto requiere una relación entre pedidos del cloud y proyectos locales
-                String bonitaCaseId = obtenerBonitaCaseIdDelPedido(proyectId);
+                String bonitaCaseId = obtenerBonitaCaseIdDelPedido(compromisoDto.getProyectId());
+                logger.debug("Bonita Case ID: {}", bonitaCaseId);
                 
                 if (bonitaCaseId != null) {
                     // Llamar al método corregido con bonitaCaseId
