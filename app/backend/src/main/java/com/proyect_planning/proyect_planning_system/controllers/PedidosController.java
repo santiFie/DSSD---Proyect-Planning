@@ -52,18 +52,16 @@ public class PedidosController {
     }
 
     @PostMapping("/{pedidoId}/compromisos")
-    @CrossOrigin(origins = "*")
     public ResponseEntity<Map<String, Object>> crearCompromiso(
         @PathVariable Long pedidoId, 
-        @RequestBody NewCompromisoDto compromisoDto,
-        @RequestBody Long proyectId
+        @RequestBody NewCompromisoDto compromisoDto
         ) {
         
         logger.debug("Creando compromiso para pedido ID: {}", pedidoId);
         logger.debug("Datos del compromiso: ONG ID: {}, Descripción: {}, ProyectId: {}", 
         compromisoDto.getOngColaboranteId(), 
         compromisoDto.getDescripcion(),
-        compromisoDto.getProyectId());  // ✅ Agregar log para proyectId
+        compromisoDto.getPedido().getProyectoId());
     
         
         try {
@@ -76,7 +74,7 @@ public class PedidosController {
             
             try {
                 // Esto requiere una relación entre pedidos del cloud y proyectos locales
-                String bonitaCaseId = obtenerBonitaCaseIdDelPedido(proyectId);
+                String bonitaCaseId = obtenerBonitaCaseIdDelPedido(compromisoDto.getPedido().getProyectoId());
                 
                 if (bonitaCaseId != null) {
                     // Llamar al método corregido con bonitaCaseId
