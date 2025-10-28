@@ -9,6 +9,7 @@
       <tr>
         <th>ID</th>
         <th>ID de proyecto</th>
+        <th>ID etapa</th>
         <th>Descripción</th>
         <th>Estado</th>
         <th>Acciones</th>
@@ -18,10 +19,11 @@
       <tr *ngFor="let p of pedidos">
         <td>{{ p.id }}</td>
         <td>{{ p.proyectoId || '-' }}</td>
+        <td>{{ p.etapaId || '-' }}</td>
         <td>{{ p.descripcion || '-' }}</td>
         <td>{{ p.estado || '-' }}</td>
         <td>
-          <a routerLink="/compromisos/new/{{ p.id }}">Brindar ayuda</a>
+          <div (click)="brindarAyuda(p)" class="btn btn-secondary">Brindar ayuda</div>
         </td>
       </tr>
     </tbody>

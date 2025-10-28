@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Pedido } from '../../models/pedido.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NewCompromisoDto } from '../../models/compromiso.model';
 import { PedidoService } from '../../services/pedido.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-compromiso-form',
@@ -15,58 +16,53 @@ import { PedidoService } from '../../services/pedido.service';
 })
 export class CompromisoFormComponent implements OnInit {
 
-    pedidoId: number = -1;
-    
-    compromiso: NewCompromisoDto = {
-      pedidoId: 0,
-      ongColaboranteId: 0,
-      descripcion: '',
-      fechaCompromiso: '',
-      estado: 'PENDIENTE',
-      version: 1
-    };
+  pedido: Pedido = { id: -1 };
 
-    estados = ['PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'];
-    isSubmitting = false;
+  compromiso: NewCompromisoDto = {
+    ongColaboranteId: 0,
+    descripcion: '',
+    fechaCompromiso: '',
+    estado: 'PENDIENTE',
+    version: 1,
+    pedido: this.pedido
+  };
+
+  estados = ['PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'];
+  isSubmitting = false;
 
   constructor(
-    private pedidoService: PedidoService, 
+    private pedidoService: PedidoService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private readonly location: Location
   ) { }
 
   ngOnInit(): void {
-    this.pedidoId = this.route.snapshot.params['id'];
-    this.compromiso.pedidoId = this.pedidoId;
+    const state = this.location.getState() as { pedido: Pedido };
+    this.pedido = state.pedido;
+    this.compromiso.pedido = this.pedido;
   }
 
   onSubmit(): void {
-    if (this.pedidoId === -1) {
-        console.error('Pedido ID no válido');
-        return;
+    if (this.pedido?.id === -1) {
+      console.error('Pedido ID no válido');
+      return;
     }
-    
-    this.isSubmitting = true;
-    // Creo que no hace falta: this.compromiso.pedidoId = this.pedidoId;
-    
-    console.log('Creando compromiso para el pedido ID:', this.pedidoId, this.compromiso);
-    this.pedidoService.getPedidoById(this.pedidoId).subscribe({
-      next: (pedido) => {
-        this.pedidoService.createCompromiso(this.pedidoId, this.compromiso, pedido.proyectoId).subscribe({
-          next: (response) => {
-            console.log('Compromiso creado exitosamente:', response);
-            this.router.navigate(['/pedidos']);
-          },
-          error: (error) => {
-            console.error('Error al crear el compromiso:', error);
-            alert('Error al crear el compromiso. Por favor intente nuevamente.');
-          },
-          complete: () => {
-            this.isSubmitting = false;
-          }
-        });
-      }
-    });
+    if (!this.isSubmitting) {
+      this.isSubmitting = true;
+      console.log('Creando compromiso para el pedido ID:', this.pedido.id, this.compromiso);
+      this.pedidoService.createCompromiso(this.compromiso).pipe(finalize(() => this.isSubmitting = false))
+      .subscribe({
+        next: (response) => {
+          console.log('Compromiso creado exitosamente:', response);
+          this.router.navigate(['/pedidos']);
+        },
+        error: (error) => {
+          console.error('Error al crear el compromiso:', error);
+          alert('Error al crear el compromiso. Por favor intente nuevamente.');
+        }
+      });
+    }
   }
 
   onCancel(): void {

@@ -8,21 +8,20 @@ import { NewCompromisoDto } from '../models/compromiso.model';
   providedIn: 'root'
 })
 export class PedidoService {
-  private apiCloudUrl = 'http://localhost:8085/Dssd2025Cloud/api/v1/pedidos'; 
   private apiUrl = 'http://localhost:8081/api/pedidos';
 
   constructor(private http: HttpClient) { }
 
   getAllPedidos(): Observable<Pedido[]> {
-    return this.http.get<Pedido[]>(this.apiCloudUrl);
+    return this.http.get<Pedido[]>(`${this.apiUrl}/all`);
   }
 
   getPedidoById(id: number): Observable<Pedido> {
-    return this.http.get<Pedido>(`${this.apiCloudUrl}/${id}`);
+    return this.http.get<Pedido>(`${this.apiUrl}/${id}`);
   }
 
-  createCompromiso(id: number, compromiso: NewCompromisoDto, proyectId: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/compromisos`, { compromiso, proyectId });
+  createCompromiso(compromiso: NewCompromisoDto): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${compromiso.pedido.id}/compromisos`, compromiso);
   }
 
 }
