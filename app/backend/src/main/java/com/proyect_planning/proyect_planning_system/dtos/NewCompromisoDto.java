@@ -23,4 +23,14 @@ public class NewCompromisoDto {
 
     private PedidoCloudDTO pedido;
     
+    private Long proyectId;  // ✅ Agregar este campo
+
+    // Getters y Setters
+    public Long getProyectId() {
+        return proyectId;
+    }
+
+    public void setProyectId(Long proyectId) {
+        this.proyectId = proyectId;
+    }
 }
