@@ -5,6 +5,8 @@ import { Pedido } from '../../models/pedido.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NewCompromisoDto } from '../../models/compromiso.model';
 import { PedidoService } from '../../services/pedido.service';
+import { AuthService } from '../../services/auth.service';
+
 
 @Component({
   selector: 'app-compromiso-form',
@@ -22,28 +24,41 @@ export class CompromisoFormComponent implements OnInit {
       ongColaboranteId: 0,
       descripcion: '',
       fechaCompromiso: '',
-      estado: 'PENDIENTE',
+      estado: 'PENDIENTE', // Este es el estado inicial del compromiso
       version: 1
     };
 
-    estados = ['PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'];
+    // estados posibles ['PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'];
+
+    private ongId = -1;
+
     isSubmitting = false;
 
   constructor(
     private pedidoService: PedidoService, 
     private route: ActivatedRoute,
-    private router: Router
-  ) { }
+    private router: Router,
+    private authService: AuthService // Inyectar AuthService
+
+    ) { }
 
   ngOnInit(): void {
     this.pedidoId = this.route.snapshot.params['id'];
     this.compromiso.pedidoId = this.pedidoId;
+    
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        // Asignar el ID de la ONG colaborante desde el usuario logueado
+        this.compromiso.ongColaboranteId = user.ongId;
+      }
+    });
+
   }
 
   onSubmit(): void {
     if (this.pedidoId === -1) {
-        console.error('Pedido ID no válido');
-        return;
+      console.error('Pedido ID no válido');
+      return;
     }
     
     this.isSubmitting = true;
