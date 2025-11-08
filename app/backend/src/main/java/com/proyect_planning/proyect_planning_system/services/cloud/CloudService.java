@@ -116,4 +116,27 @@ public class CloudService {
         }
     }
 
+    public PedidoCloudDTO getPedidoById(Long pedidoId) throws CloudException {
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+        try {
+            ResponseEntity<PedidoCloudDTO> response = restTemplate.exchange(
+                    cloudBaseUrl + "/api/v1/pedidos/" + pedidoId,
+                    HttpMethod.GET,
+                    requestEntity,
+                    PedidoCloudDTO.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return response.getBody();
+            } else {
+                logger.error("Error al obtener pedido. HttpStatus: {}, Response: {}", response.getStatusCode(),
+                        response.getBody());
+                throw new CloudException("Error al obtener pedido (ver logs)");
+            }
+        } catch (Exception e) {
+            logger.error("Excepción al obtener pedido {}: {}", pedidoId, e.getMessage(), e);
+            throw new CloudException("No se pudo obtener el pedido: " + e.getMessage(), e);
+        }
+    }
+
 }

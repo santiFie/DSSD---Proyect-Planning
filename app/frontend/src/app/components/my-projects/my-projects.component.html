@@ -80,8 +80,8 @@
                 <small *ngIf="pedido.createdAt"><strong>Creado:</strong> {{ pedido.createdAt | date:'short' }}</small>
               </div>
               <div class="pedido-actions">
-                <a [routerLink]="['/compromisos/new', pedido.id]" class="btn btn-small btn-primary">
-                  Crear compromiso
+                <a [routerLink]="['/pedidos', pedido.id, 'compromisos', project.id]" class="btn btn-small btn-primary">
+                  Ver compromisos
                 </a>
               </div>
             </div>
