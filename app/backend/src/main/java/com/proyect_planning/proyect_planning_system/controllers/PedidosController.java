@@ -51,6 +51,17 @@ public class PedidosController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPedidoById(@PathVariable Long id) {
+        try {
+            PedidoCloudDTO pedido = cloudService.getPedidoById(id);
+            return ResponseEntity.ok().body(pedido);
+        } catch (Exception e) {
+            logger.error("Error al obtener el pedido {}: {}", id, e.getMessage());
+            return ResponseEntity.status(500).body("Error al obtener el pedido: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/proyecto/{proyectoId}")
     public ResponseEntity<?> getPedidosByProyecto(@PathVariable Long proyectoId) {
         try {
@@ -94,6 +105,7 @@ public class PedidosController {
                 
                 if (bonitaCaseId != null) {
                     // Llamar al proceso de Bonita para analizar el compromiso (aceptado)
+                    // Bonita se encargará de actualizar el estado en el Cloud
                     bonitaBusinessSvc.analizarCompromiso(
                         bonitaCaseId,
                         true, // aceptado = true
@@ -143,6 +155,7 @@ public class PedidosController {
                 
                 if (bonitaCaseId != null) {
                     // Llamar al proceso de Bonita para analizar el compromiso (rechazado)
+                    // Bonita se encargará de actualizar el estado en el Cloud
                     bonitaBusinessSvc.analizarCompromiso(
                         bonitaCaseId,
                         false, // aceptado = false

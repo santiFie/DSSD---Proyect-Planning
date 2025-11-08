@@ -73,7 +73,8 @@ export class CompromisoDetailComponent implements OnInit {
     this.pedidoService.aceptarCompromiso(this.pedidoId, compromiso.id, this.proyectoId).subscribe({
       next: () => {
         this.successMessage = 'Compromiso aceptado exitosamente';
-        this.loadCompromisos(); // Recargar la lista
+        // Recargar la lista desde el servidor
+        this.loadCompromisos();
         setTimeout(() => this.successMessage = null, 5000);
       },
       error: (error) => {
@@ -92,7 +93,8 @@ export class CompromisoDetailComponent implements OnInit {
     this.pedidoService.rechazarCompromiso(this.pedidoId, compromiso.id, this.proyectoId).subscribe({
       next: () => {
         this.successMessage = 'Compromiso rechazado exitosamente';
-        this.loadCompromisos(); // Recargar la lista
+        // Recargar la lista desde el servidor
+        this.loadCompromisos();
         setTimeout(() => this.successMessage = null, 5000);
       },
       error: (error) => {
