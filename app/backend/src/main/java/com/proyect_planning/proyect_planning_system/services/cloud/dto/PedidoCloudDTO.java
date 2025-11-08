@@ -5,6 +5,7 @@ public class PedidoCloudDTO {
     private Long proyectoId;
     private Long etapaId;
     private String descripcion;
+    private String estado;
 
     public Long getId() {
         return id;
@@ -36,6 +37,14 @@ public class PedidoCloudDTO {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
 }

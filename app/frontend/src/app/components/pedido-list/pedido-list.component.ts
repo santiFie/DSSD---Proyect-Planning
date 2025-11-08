@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Pedido } from '../../models/pedido.model';
 import { PedidoService } from '../../services/pedido.service';
 
@@ -16,7 +16,10 @@ export class PedidoListComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  constructor(private pedidoService: PedidoService) { }
+  constructor(
+    private pedidoService: PedidoService,
+    private readonly router: Router
+  ) { }
 
   ngOnInit(): void {
     this.loadPedidos();
@@ -34,7 +37,6 @@ export class PedidoListComponent implements OnInit {
   brindarAyuda(p: Pedido): void {
     // Redirigir al formulario de compromiso
     console.log('Redirigiendo al formulario de compromiso para pedido:', p.id);
-    // Aquí podrías implementar la navegación si tienes Router inyectado
-    // this.router.navigate(['/compromisos/new', p.id]);
+    this.router.navigateByUrl('/compromisos/new/' + p.id, { state: { pedido: p } });
   }
 }

@@ -6,15 +6,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proyect_planning.proyect_planning_system.config.BonitaConfig;
 import com.proyect_planning.proyect_planning_system.services.bonita.exception.BonitaException;
 
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
+
+import java.time.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -249,11 +257,12 @@ public class BonitaApiService {
     }
 
     /**
-     * Obtiene las tareas en estado listo, para un caso específico
+     * Obtiene las tareas humanas para un caso específico
      *
-     * @throws BonitaException
+     * @throws BonitaException Ante un error en la comunicación con Bonita
      */
-    public List<Map<String, String>> getTasksByCaseId(String caseId) throws BonitaException {
+    @Deprecated (since = "2025-10-28", forRemoval = true)
+    public List<Map<String, String>> getTasksByCaseIdOld(String caseId) throws BonitaException {
         try {
             HttpHeaders headers = authService.createAuthenticatedHeaders();
             HttpEntity<String> requestEntity = new HttpEntity<>(headers);
@@ -356,5 +365,40 @@ public class BonitaApiService {
         }
     }
     
+
+    /**
+     * Obtiene las tareas humanas para un caso específico
+     * @throws BonitaException Ante un error en la comunicación con Bonita
+     */
+    public List<Map<String, String>> getTasksByCaseId(String caseId) throws BonitaException {
+        WebClient clientTerm = WebClient
+                .builder()
+                .baseUrl(bonitaConfig.getApiUrl())
+                .defaultHeaders(headers -> headers.addAll(authService.createAuthenticatedHeaders()))
+                .build();
+        WebClient.RequestHeadersSpec<?> requestBusq = clientTerm
+                .get()
+                .uri("/bpm/humanTask?f=caseId=" + caseId);
+        try {
+            return requestBusq.retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<Map<String, String>>>() {})
+                    .flatMap(list -> {
+                        if (list == null || list.isEmpty()) {
+                            return Mono.error(new IllegalStateException("Lista vacía, reintentando..."));
+                        } else {
+                            return Mono.just(list);
+                        }
+                    })
+                    .retryWhen(Retry.backoff(3, Duration.ofMillis(500)).jitter(0.5)
+                        .filter(throwable -> throwable instanceof IllegalStateException)
+                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> {
+                            throw (WebClientException) retrySignal.failure();
+                        }))
+                    .block();
+        } catch (Exception e) {
+            logger.error("Error obteniendo tareas por caseId: {}", caseId, e);
+            throw new BonitaException("Error obteniendo tareas por caseId: " + caseId, e);
+        }
+    }
 
 }

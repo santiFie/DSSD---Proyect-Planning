@@ -1,0 +1,24 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "ProyectPlanningSystemApplication",
+      "request": "launch",
+      "mainClass": "com.proyect_planning.proyect_planning_system.ProyectPlanningSystemApplication",
+      "args": [],
+      "vmArgs": ["-Duser.timezone=UTC", "-Dfile.encoding=UTF-8"],
+      "env": {
+        "SPRING_DATASOURCE_URL": "jdbc:postgresql://localhost:5432/myappdb",
+        "SPRING_DATASOURCE_USERNAME": "admin",
+        "SPRING_DATASOURCE_PASSWORD": "admin",
+        "BONITA_SERVER_URL": "http://localhost:49649/bonita",
+        "TZ": "UTC",
+        "user.timezone": "UTC"
+      }
+    }
+  ]
+}

@@ -39,31 +39,19 @@ public class PedidosController {
     private ProyectService proyectService;
 
     @GetMapping("/all")
-    public ResponseEntity<Map<String, Object>> getAllPedidos() throws Exception {
-        Map<String, Object> response = new HashMap<>();
-
+    public ResponseEntity<?> getAllPedidos() {
         // Lógica para obtener todos los pedidos
         List<PedidoCloudDTO> pedidos = null;
-
         try{
             pedidos = cloudService.getAllPedidos();
-            response.put("status", "success");
-            response.put("message", "Lista de pedidos obtenida exitosamente");
-            response.put("pedidos", pedidos);
-        }
-        catch(Exception e){
+            return ResponseEntity.ok().body(pedidos);
+        } catch(Exception e){
             logger.error("Error al obtener los pedidos de cloud: {}", e.getMessage());
-            response.put("status", "error");
-            response.put("message", "Error al obtener los pedidos de cloud: " + e.getMessage());
-            response.put("pedidos", List.of());
-            throw e;
+            return ResponseEntity.status(500).body("Error al obtener los pedidos de cloud: " + e.getMessage());
         }
-        
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{pedidoId}/compromisos")
-    @CrossOrigin(origins = "*")
     public ResponseEntity<Map<String, Object>> crearCompromiso(
         @PathVariable Long pedidoId, 
         @RequestBody NewCompromisoDto compromisoDto
@@ -73,7 +61,7 @@ public class PedidosController {
         logger.debug("Datos del compromiso: ONG ID: {}, Descripción: {}, ProyectId: {}", 
         compromisoDto.getOngColaboranteId(), 
         compromisoDto.getDescripcion(),
-        compromisoDto.getProyectId());  // ✅ Agregar log para proyectId
+        compromisoDto.getPedido().getProyectoId());
     
         
         try {
@@ -86,8 +74,7 @@ public class PedidosController {
             
             try {
                 // Esto requiere una relación entre pedidos del cloud y proyectos locales
-                String bonitaCaseId = obtenerBonitaCaseIdDelPedido(compromisoDto.getProyectId());
-                logger.debug("Bonita Case ID: {}", bonitaCaseId);
+                String bonitaCaseId = obtenerBonitaCaseIdDelPedido(compromisoDto.getPedido().getProyectoId());
                 
                 if (bonitaCaseId != null) {
                     // Llamar al método corregido con bonitaCaseId

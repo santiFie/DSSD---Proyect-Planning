@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,9 +24,12 @@ import com.proyect_planning.proyect_planning_system.services.cloud.exceptions.Cl
 public class CloudService {
     private Logger logger = LoggerFactory.getLogger(CloudService.class);
     private final RestTemplate restTemplate;
-    private static final String CLOUD_BASE_URL = "http://localhost:8080/Dssd2025Cloud";
-    private static final String CLOUD_USER = "USER_WEBAPP";
-    private static final String CLOUD_PASS = "Dssd2025@Webapp";
+    @Value("${cloud.service.url}")
+    private String cloudBaseUrl;
+    @Value("${cloud.service.user}")
+    private String cloudUser;
+    @Value("${cloud.service.password}")
+    private String cloudPass;
 
     public CloudService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -41,11 +45,11 @@ public class CloudService {
         HttpHeaders headers = new HttpHeaders();
         String jwtToken = "";
         Map<String, String> authPayload = new HashMap<>();
-        authPayload.put("username", CLOUD_USER);
-        authPayload.put("password", CLOUD_PASS);
+        authPayload.put("username", cloudUser);
+        authPayload.put("password", cloudPass);
         headers.set("Content-Type", "application/json");
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(authPayload, headers);
-        ResponseEntity<UserCloudDTO> response = restTemplate.exchange(CLOUD_BASE_URL + "/api/v1/auth/login",
+        ResponseEntity<UserCloudDTO> response = restTemplate.exchange(cloudBaseUrl + "/api/v1/auth/login",
                 HttpMethod.POST,
                 requestEntity, UserCloudDTO.class);
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
@@ -69,7 +73,7 @@ public class CloudService {
     public List<PedidoCloudDTO> getAllPedidos() throws CloudException {
         HttpHeaders headers = getAuthenticatedHeaders();
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-        ResponseEntity<List<PedidoCloudDTO>> response = restTemplate.exchange(CLOUD_BASE_URL + "/api/v1/pedidos",
+        ResponseEntity<List<PedidoCloudDTO>> response = restTemplate.exchange(cloudBaseUrl + "/api/v1/pedidos",
                 HttpMethod.GET,
                 requestEntity, new ParameterizedTypeReference<List<PedidoCloudDTO>>() {
                 });

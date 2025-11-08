@@ -1,7 +1,9 @@
 <div class="compromiso-form-container">
   <div class="form-header">
     <h2>Crear Nuevo Compromiso</h2>
-    <p class="subtitle">Pedido ID: {{ pedidoId }}</p>
+    <p class="subtitle">Pedido ID: {{ pedido.id }}</p>
+    <p class="subtitle">Proyecto ID: {{ pedido.proyectoId }} | Etapa ID: {{ pedido.etapaId }}</p>
+    <p class="subtitle">Descripción: {{ pedido.descripcion }}</p>
   </div>
 
   <form #compromisoForm="ngForm" (ngSubmit)="onSubmit()" class="compromiso-form">
