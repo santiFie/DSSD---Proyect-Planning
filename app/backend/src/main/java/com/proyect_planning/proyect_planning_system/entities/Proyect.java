@@ -42,6 +42,9 @@ public class Proyect {
     @Column
     private String bonitaCaseId;
 
+    @Column(nullable = false)
+    private Long ongOriginante;
+
     public void addStage(Stage stage) {
         stages.add(stage);
         stage.setProyect(this);

@@ -57,6 +57,7 @@ public class BonitaBusinessService {
                 etapa.put("desc_pedido", stage.getNeeds() != null ? stage.getNeeds().getDescription() : "");
                 etapa.put("estado", "PENDIENTE");
                 etapa.put("proyecto_id", project.getId());
+                etapa.put("ong_id", project.getOngOriginante());
                 etapasInput.add(etapa);
             }
         }

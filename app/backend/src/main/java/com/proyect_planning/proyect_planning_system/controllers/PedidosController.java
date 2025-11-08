@@ -44,10 +44,36 @@ public class PedidosController {
         List<PedidoCloudDTO> pedidos = null;
         try{
             pedidos = cloudService.getAllPedidos();
-            return ResponseEntity.ok().body(pedidos);
+                return ResponseEntity.ok().body(pedidos);
         } catch(Exception e){
             logger.error("Error al obtener los pedidos de cloud: {}", e.getMessage());
             return ResponseEntity.status(500).body("Error al obtener los pedidos de cloud: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/proyecto/{proyectoId}")
+    public ResponseEntity<?> getPedidosByProyecto(@PathVariable Long proyectoId) {
+        try {
+            List<PedidoCloudDTO> allPedidos = cloudService.getAllPedidos();
+            // Filtrar pedidos por proyectoId
+            List<PedidoCloudDTO> pedidosProyecto = allPedidos.stream()
+                .filter(pedido -> pedido.getProyectoId() != null && pedido.getProyectoId().equals(proyectoId))
+                .toList();
+            return ResponseEntity.ok().body(pedidosProyecto);
+        } catch (Exception e) {
+            logger.error("Error al obtener los pedidos del proyecto {}: {}", proyectoId, e.getMessage());
+            return ResponseEntity.status(500).body("Error al obtener los pedidos del proyecto: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{pedidoId}/compromisos")
+    public ResponseEntity<?> getCompromisosByPedidoId(@PathVariable Long pedidoId) {
+        try {
+            List<?> compromisos = cloudService.getCompromisosByPedidoId(pedidoId);
+            return ResponseEntity.ok().body(compromisos);
+        } catch (Exception e) {
+            logger.error("Error al obtener los compromisos del pedido {}: {}", pedidoId, e.getMessage());
+            return ResponseEntity.status(500).body("Error al obtener los compromisos del pedido: " + e.getMessage());
         }
     }
 

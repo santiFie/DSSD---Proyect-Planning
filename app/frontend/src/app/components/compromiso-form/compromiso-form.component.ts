@@ -5,12 +5,7 @@ import { Pedido } from '../../models/pedido.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NewCompromisoDto } from '../../models/compromiso.model';
 import { PedidoService } from '../../services/pedido.service';
-<<<<<<< HEAD
-import { AuthService } from '../../services/auth.service';
-
-=======
 import { finalize } from 'rxjs';
->>>>>>> branch-eze
 
 @Component({
   selector: 'app-compromiso-form',
@@ -21,24 +16,6 @@ import { finalize } from 'rxjs';
 })
 export class CompromisoFormComponent implements OnInit {
 
-<<<<<<< HEAD
-    pedidoId: number = -1;
-    
-    compromiso: NewCompromisoDto = {
-      pedidoId: 0,
-      ongColaboranteId: 0,
-      descripcion: '',
-      fechaCompromiso: '',
-      estado: 'PENDIENTE', // Este es el estado inicial del compromiso
-      version: 1
-    };
-
-    // estados posibles ['PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'];
-
-    private ongId = -1;
-
-    isSubmitting = false;
-=======
   pedido: Pedido = { id: -1 };
 
   compromiso: NewCompromisoDto = {
@@ -52,35 +29,11 @@ export class CompromisoFormComponent implements OnInit {
 
   estados = ['PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'];
   isSubmitting = false;
->>>>>>> branch-eze
 
   constructor(
     private pedidoService: PedidoService,
     private route: ActivatedRoute,
     private router: Router,
-<<<<<<< HEAD
-    private authService: AuthService // Inyectar AuthService
-
-    ) { }
-
-  ngOnInit(): void {
-    this.pedidoId = this.route.snapshot.params['id'];
-    this.compromiso.pedidoId = this.pedidoId;
-    
-    this.authService.currentUser$.subscribe(user => {
-      if (user) {
-        // Asignar el ID de la ONG colaborante desde el usuario logueado
-        this.compromiso.ongColaboranteId = user.ongId;
-      }
-    });
-
-  }
-
-  onSubmit(): void {
-    if (this.pedidoId === -1) {
-      console.error('Pedido ID no válido');
-      return;
-=======
     private readonly location: Location
   ) { }
 
@@ -109,7 +62,6 @@ export class CompromisoFormComponent implements OnInit {
           alert('Error al crear el compromiso. Por favor intente nuevamente.');
         }
       });
->>>>>>> branch-eze
     }
   }
 

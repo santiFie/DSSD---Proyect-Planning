@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.proyect_planning.proyect_planning_system.services.cloud.dto.CompromisoCloudDTO;
 import com.proyect_planning.proyect_planning_system.services.cloud.dto.PedidoCloudDTO;
 import com.proyect_planning.proyect_planning_system.services.cloud.dto.UserCloudDTO;
 import com.proyect_planning.proyect_planning_system.services.cloud.exceptions.CloudException;
@@ -49,17 +50,30 @@ public class CloudService {
         authPayload.put("password", cloudPass);
         headers.set("Content-Type", "application/json");
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(authPayload, headers);
-        ResponseEntity<UserCloudDTO> response = restTemplate.exchange(cloudBaseUrl + "/api/v1/auth/login",
-                HttpMethod.POST,
-                requestEntity, UserCloudDTO.class);
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
-                && response.getBody().getToken() != null) {
-            jwtToken = response.getBody().getToken().getToken();
-        } else {
-            logger.error("Error al loguearse en cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
-                    response.getBody());
-            throw new CloudException("Error al loguearse en cloud (ver logs)");
+        
+        try {
+            logger.debug("Intentando autenticar en cloud: {}", cloudBaseUrl + "/api/v1/auth/login");
+            ResponseEntity<UserCloudDTO> response = restTemplate.exchange(
+                    cloudBaseUrl + "/api/v1/auth/login",
+                    HttpMethod.POST,
+                    requestEntity, 
+                    UserCloudDTO.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
+                    && response.getBody().getToken() != null) {
+                jwtToken = response.getBody().getToken().getToken();
+                logger.debug("Autenticación exitosa en cloud");
+            } else {
+                logger.error("Error al loguearse en cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
+                        response.getBody());
+                throw new CloudException("Error al loguearse en cloud (ver logs)");
+            }
+        } catch (Exception e) {
+            logger.error("Excepción al intentar autenticar en cloud: URL={}, Error={}", 
+                    cloudBaseUrl + "/api/v1/auth/login", e.getMessage(), e);
+            throw new CloudException("No se pudo conectar al servicio cloud: " + e.getMessage(), e);
         }
+        
         headers.set("Authorization", jwtToken);
         return headers;
     }
@@ -83,6 +97,22 @@ public class CloudService {
             logger.error("Error al obtener pedidos de cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
                     response.getBody());
             throw new CloudException("Error al obtener pedidos de cloud (ver logs)");
+        }
+    }
+
+    public List<CompromisoCloudDTO> getCompromisosByPedidoId(Long pedidoId) throws CloudException {
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+        ResponseEntity<List<CompromisoCloudDTO>> response = restTemplate.exchange(cloudBaseUrl + "/api/v1/pedidos/" + pedidoId + "/compromisos",
+                HttpMethod.GET,
+                requestEntity, new ParameterizedTypeReference<List<CompromisoCloudDTO>>() {
+                });
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return response.getBody();
+        } else {
+            logger.error("Error al obtener compromisos de cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
+                    response.getBody());
+            throw new CloudException("Error al obtener compromisos de cloud (ver logs)");
         }
     }
 
