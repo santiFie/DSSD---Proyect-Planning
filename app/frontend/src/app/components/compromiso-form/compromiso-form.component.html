@@ -7,28 +7,7 @@
   </div>
 
   <form #compromisoForm="ngForm" (ngSubmit)="onSubmit()" class="compromiso-form">
-    
-    <!-- ONG Colaborante ID -->
-    <div class="form-group">
-      <label for="ongColaboranteId" class="form-label">
-        ID ONG Colaborante <span class="required">*</span>
-      </label>
-      <input
-        type="number"
-        id="ongColaboranteId"
-        name="ongColaboranteId"
-        [(ngModel)]="compromiso.ongColaboranteId"
-        class="form-control"
-        placeholder="Ingrese el ID de la ONG colaborante"
-        required
-        min="1"
-        #ongColaboranteId="ngModel"
-      />
-      <div class="error-message" *ngIf="ongColaboranteId.invalid && ongColaboranteId.touched">
-        <span *ngIf="ongColaboranteId.errors?.['required']">El ID de ONG colaborante es requerido</span>
-        <span *ngIf="ongColaboranteId.errors?.['min']">El ID debe ser mayor a 0</span>
-      </div>
-    </div>
+
 
     <!-- Descripción -->
     <div class="form-group">
@@ -73,51 +52,6 @@
       />
       <div class="error-message" *ngIf="fechaCompromiso.invalid && fechaCompromiso.touched">
         <span *ngIf="fechaCompromiso.errors?.['required']">La fecha de compromiso es requerida</span>
-      </div>
-    </div>
-
-    <!-- Estado -->
-    <div class="form-group">
-      <label for="estado" class="form-label">
-        Estado <span class="required">*</span>
-      </label>
-      <select
-        id="estado"
-        name="estado"
-        [(ngModel)]="compromiso.estado"
-        class="form-control select"
-        required
-        #estado="ngModel"
-      >
-        <option value="" disabled>Selecciona un estado</option>
-        <option *ngFor="let estado of estados" [value]="estado">
-          {{ estado.replace('_', ' ') }}
-        </option>
-      </select>
-      <div class="error-message" *ngIf="estado.invalid && estado.touched">
-        <span *ngIf="estado.errors?.['required']">El estado es requerido</span>
-      </div>
-    </div>
-
-    <!-- Versión -->
-    <div class="form-group">
-      <label for="version" class="form-label">
-        Versión <span class="required">*</span>
-      </label>
-      <input
-        type="number"
-        id="version"
-        name="version"
-        [(ngModel)]="compromiso.version"
-        class="form-control"
-        placeholder="Versión del compromiso"
-        required
-        min="1"
-        #version="ngModel"
-      />
-      <div class="error-message" *ngIf="version.invalid && version.touched">
-        <span *ngIf="version.errors?.['required']">La versión es requerida</span>
-        <span *ngIf="version.errors?.['min']">La versión debe ser mayor a 0</span>
       </div>
     </div>
 

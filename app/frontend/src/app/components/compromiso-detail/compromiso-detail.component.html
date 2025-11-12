@@ -1,0 +1,98 @@
+<div class="compromiso-detail">
+  <div class="header">
+    <div class="header-content">
+      <button (click)="volver()" class="btn btn-secondary btn-back">
+        ← Volver a Mis Proyectos
+      </button>
+      <div class="header-info">
+        <h2>Compromisos del Pedido #{{ pedidoId }}</h2>
+        <p *ngIf="pedido" class="pedido-info">
+          <span *ngIf="pedido.descripcion">{{ pedido.descripcion }}</span>
+          <span *ngIf="pedido.estado" class="pedido-estado" [ngClass]="getEstadoClass(pedido.estado)">
+            {{ pedido.estado }}
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="alert">
+    Cargando compromisos...
+  </div>
+
+  <div *ngIf="!loading && compromisos.length === 0" class="alert alert-info">
+    No hay compromisos asociados a este pedido.
+  </div>
+
+  <div class="compromisos-list" *ngIf="!loading && compromisos.length > 0">
+    <div class="compromiso-card" *ngFor="let compromiso of compromisos">
+      <div class="compromiso-header">
+        <div class="compromiso-title">
+          <h3>Compromiso #{{ compromiso.id }}</h3>
+          <span class="compromiso-estado" [ngClass]="getEstadoClass(compromiso.estado)">
+            {{ compromiso.estado }}
+          </span>
+        </div>
+      </div>
+
+      <div class="compromiso-body">
+        <div class="info-row">
+          <div class="info-item">
+            <label>ONG Colaborante:</label>
+            <span>ID: {{ compromiso.ongColaboranteId }}</span>
+          </div>
+          <div class="info-item" *ngIf="compromiso.fechaCompromiso">
+            <label>Fecha del compromiso:</label>
+            <span>{{ compromiso.fechaCompromiso | date:'medium' }}</span>
+          </div>
+        </div>
+
+        <div class="info-row" *ngIf="compromiso.descripcion">
+          <div class="info-item full-width">
+            <label>Descripción:</label>
+            <p class="descripcion">{{ compromiso.descripcion }}</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-item">
+            <label>Versión:</label>
+            <span>{{ compromiso.version }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="compromiso-actions" *ngIf="canManageCompromiso(compromiso)">
+        <button 
+          (click)="aceptarCompromiso(compromiso)" 
+          class="btn btn-success"
+        >
+          ✓ Aceptar compromiso
+        </button>
+        <button 
+          (click)="rechazarCompromiso(compromiso)" 
+          class="btn btn-danger"
+        >
+          ✗ Rechazar compromiso
+        </button>
+      </div>
+
+      <div class="compromiso-status" *ngIf="!canManageCompromiso(compromiso)">
+        <p class="status-message" *ngIf="compromiso.estado === 'ACEPTADO'">
+          ✓ Este compromiso ya ha sido aceptado
+        </p>
+        <p class="status-message rejected" *ngIf="compromiso.estado === 'RECHAZADO'">
+          ✗ Este compromiso ha sido rechazado
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

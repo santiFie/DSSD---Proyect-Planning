@@ -19,6 +19,7 @@ public class ProyectDto {
     private String startDate;
     private String endDate;
     private String neighborhood;
+    private Long ongOriginante;
     private List<StageDto> stages;
     
     
@@ -37,6 +38,7 @@ public class ProyectDto {
                 .startDate(proyect.getStartDate())
                 .endDate(proyect.getEndDate())
                 .neighborhood(proyect.getNeighborhood())
+                .ongOriginante(proyect.getOngOriginante())
                 .stages(stageDtos)
                 .build();
     }

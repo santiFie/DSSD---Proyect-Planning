@@ -57,6 +57,7 @@ public class BonitaBusinessService {
                 etapa.put("desc_pedido", stage.getNeeds() != null ? stage.getNeeds().getDescription() : "");
                 etapa.put("estado", "PENDIENTE");
                 etapa.put("proyecto_id", project.getId());
+                etapa.put("ong_id", project.getOngOriginante());
                 etapasInput.add(etapa);
             }
         }
@@ -137,6 +138,9 @@ public class BonitaBusinessService {
             Map<String, Object> taskData = new HashMap<>();
             taskData.put("analisis_compromiso", analisisCompromiso);
             bonitaApiSvc.executeTask(tareas.get(0).get("id"), taskData);
+
+            logger.error("Compromiso analizado en Bonita. CaseId: {}, Acepta: {}, CompromisoId: {}",
+                    bonitaCaseId, aceptaCompromiso, compromisoId);
         } else {
             logger.error("No se encontraron tareas humanas para el caso ID: {}", bonitaCaseId);
         }

@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 import { ProjectListComponent } from './components/project-list/project-list.component';
 import { ProjectFormComponent } from './components/project-form/project-form.component';
+import { MyProjectsComponent } from './components/my-projects/my-projects.component';
 import { PedidoListComponent } from './components/pedido-list/pedido-list.component';
 import { CompromisoFormComponent } from './components/compromiso-form/compromiso-form.component';
+import { CompromisoDetailComponent } from './components/compromiso-detail/compromiso-detail.component';
 import { LoginComponent } from './components/login/login.component';
 import { UserListComponent } from './components/user-list/user-list.component';
 import { OngListComponent } from './components/ong-list/ong-list.component';
@@ -19,7 +21,9 @@ export const routes: Routes = [
       { path: 'projects', component: ProjectListComponent },
       { path: 'projects/new', component: ProjectFormComponent },
       { path: 'projects/edit/:id', component: ProjectFormComponent },
+      { path: 'my-projects', component: MyProjectsComponent },
       { path: 'pedidos', component: PedidoListComponent },
+      { path: 'pedidos/:pedidoId/compromisos/:proyectoId', component: CompromisoDetailComponent },
       { path: 'compromisos/new/:id', component: CompromisoFormComponent },
       {
         path: 'admin',

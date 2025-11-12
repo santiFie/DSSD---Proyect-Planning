@@ -28,7 +28,7 @@ public class ProyectService {
         this.stageRepository = stageRepository;
     }
 
-    public Proyect createProject(NewProjectDto newProjectDto) {
+    public Proyect createProject(NewProjectDto newProjectDto, Long ongId) {
         if (proyectRepository.existsByName(newProjectDto.getName())) {
             throw new IllegalArgumentException("Ya existe un proyecto con ese nombre.");
         }
@@ -71,6 +71,7 @@ public class ProyectService {
                 .startDate(newProjectDto.getStartDate())
                 .endDate(newProjectDto.getEndDate())
                 .neighborhood(newProjectDto.getNeighborhood())
+                .ongOriginante(ongId)
                 .build();
 
         // Guardar el proyecto primero
@@ -125,6 +126,10 @@ public class ProyectService {
 
     public List<Proyect> getAllProjects() {
         return proyectRepository.findAll();
+    }
+
+    public List<Proyect> getProjectsByOng(Long ongId) {
+        return proyectRepository.findByOngOriginante(ongId);
     }
 
     public Proyect addStageToProject(Long projectId, NewStageDto newStageDto) {

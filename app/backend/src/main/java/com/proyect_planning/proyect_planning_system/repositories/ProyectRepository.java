@@ -10,4 +10,5 @@ public interface ProyectRepository extends JpaRepository<Proyect, Long> {
     boolean existsByName(String name);
     Proyect findByName(String name);
     List<Proyect> findAll();
+    List<Proyect> findByOngOriginante(Long ongOriginante);
 }

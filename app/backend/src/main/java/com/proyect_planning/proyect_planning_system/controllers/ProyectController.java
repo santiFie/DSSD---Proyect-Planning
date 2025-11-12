@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +25,7 @@ import com.proyect_planning.proyect_planning_system.dtos.NewProjectDto;
 import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
 import com.proyect_planning.proyect_planning_system.dtos.ProyectDto;
 import com.proyect_planning.proyect_planning_system.entities.Proyect;
+import com.proyect_planning.proyect_planning_system.entities.User;
 import com.proyect_planning.proyect_planning_system.services.ProyectService;
 
 @RestController
@@ -45,8 +48,13 @@ public class ProyectController {
         logger.debug("Stages: {}", newProjectDto.getStages().stream().toList());
 
         try {
+            // Obtener el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User authenticatedUser = (User) authentication.getPrincipal();
+            Long ongId = authenticatedUser.getOng().getId();
+
             // Crear el proyecto en la base de datos primero
-            Proyect project = proyectService.createProject(newProjectDto);
+            Proyect project = proyectService.createProject(newProjectDto, ongId);
 
             logger.debug("Creando proyecto en entidad: {}", project.getName());
             logger.debug("Stages en entidad: {}", project.getStages().stream().toList());
@@ -118,6 +126,31 @@ public class ProyectController {
     @Transactional
     public ResponseEntity<List<ProyectDto>> getAllProjects() {
         List<Proyect> projects = proyectService.getAllProjects();
+        List<ProyectDto> projectDtos = projects.stream()
+                .map(ProyectDto::fromEntity)
+                .toList();
+        return ResponseEntity.ok(projectDtos);
+    }
+
+    @GetMapping("/ong/{ongId}")
+    @Transactional
+    public ResponseEntity<List<ProyectDto>> getProjectsByOng(@PathVariable Long ongId) {
+        List<Proyect> projects = proyectService.getProjectsByOng(ongId);
+        List<ProyectDto> projectDtos = projects.stream()
+                .map(ProyectDto::fromEntity)
+                .toList();
+        return ResponseEntity.ok(projectDtos);
+    }
+
+    @GetMapping("/my-projects")
+    @Transactional
+    public ResponseEntity<List<ProyectDto>> getMyProjects() {
+        // Obtener el usuario autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User authenticatedUser = (User) authentication.getPrincipal();
+        Long ongId = authenticatedUser.getOng().getId();
+
+        List<Proyect> projects = proyectService.getProjectsByOng(ongId);
         List<ProyectDto> projectDtos = projects.stream()
                 .map(ProyectDto::fromEntity)
                 .toList();

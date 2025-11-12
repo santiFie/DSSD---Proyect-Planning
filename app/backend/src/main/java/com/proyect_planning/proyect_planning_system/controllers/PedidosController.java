@@ -8,12 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaBusinessService;
 import com.proyect_planning.proyect_planning_system.services.cloud.CloudService;
@@ -44,10 +44,147 @@ public class PedidosController {
         List<PedidoCloudDTO> pedidos = null;
         try{
             pedidos = cloudService.getAllPedidos();
-            return ResponseEntity.ok().body(pedidos);
+                return ResponseEntity.ok().body(pedidos);
         } catch(Exception e){
             logger.error("Error al obtener los pedidos de cloud: {}", e.getMessage());
             return ResponseEntity.status(500).body("Error al obtener los pedidos de cloud: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPedidoById(@PathVariable Long id) {
+        try {
+            PedidoCloudDTO pedido = cloudService.getPedidoById(id);
+            return ResponseEntity.ok().body(pedido);
+        } catch (Exception e) {
+            logger.error("Error al obtener el pedido {}: {}", id, e.getMessage());
+            return ResponseEntity.status(500).body("Error al obtener el pedido: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/proyecto/{proyectoId}")
+    public ResponseEntity<?> getPedidosByProyecto(@PathVariable Long proyectoId) {
+        try {
+            List<PedidoCloudDTO> allPedidos = cloudService.getAllPedidos();
+            // Filtrar pedidos por proyectoId
+            List<PedidoCloudDTO> pedidosProyecto = allPedidos.stream()
+                .filter(pedido -> pedido.getProyectoId() != null && pedido.getProyectoId().equals(proyectoId))
+                .toList();
+            return ResponseEntity.ok().body(pedidosProyecto);
+        } catch (Exception e) {
+            logger.error("Error al obtener los pedidos del proyecto {}: {}", proyectoId, e.getMessage());
+            return ResponseEntity.status(500).body("Error al obtener los pedidos del proyecto: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{pedidoId}/compromisos")
+    public ResponseEntity<?> getCompromisosByPedidoId(@PathVariable Long pedidoId) {
+        try {
+            List<?> compromisos = cloudService.getCompromisosByPedidoId(pedidoId);
+            return ResponseEntity.ok().body(compromisos);
+        } catch (Exception e) {
+            logger.error("Error al obtener los compromisos del pedido {}: {}", pedidoId, e.getMessage());
+            return ResponseEntity.status(500).body("Error al obtener los compromisos del pedido: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{pedidoId}/compromisos/{compromisoId}/aceptar/{proyectoId}")
+    public ResponseEntity<?> aceptarCompromiso(
+            @PathVariable Long pedidoId, 
+            @PathVariable Long compromisoId,
+            @PathVariable Long proyectoId) {
+        try {
+            // Preparar respuesta exitosa inicial
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Compromiso aceptado exitosamente");
+
+            try {
+                // Obtener el bonitaCaseId del proyecto
+                String bonitaCaseId = obtenerBonitaCaseIdDelPedido(proyectoId);
+                
+                if (bonitaCaseId != null) {
+                    // Llamar al proceso de Bonita para analizar el compromiso (aceptado)
+                    // Bonita se encargará de actualizar el estado en el Cloud
+                    bonitaBusinessSvc.analizarCompromiso(
+                        bonitaCaseId,
+                        true, // aceptado = true
+                        compromisoId
+                    );
+                    
+                    response.put("message", "Compromiso aceptado y proceso Bonita avanzado exitosamente");
+                    response.put("bonita_case_id", bonitaCaseId);
+                    response.put("bonita_enabled", true);
+                } else {
+                    response.put("message", "Compromiso aceptado (no se encontró caso Bonita asociado)");
+                    response.put("bonita_enabled", false);
+                }
+            } catch (Exception bonitaError) {
+                logger.error("Error en Bonita al analizar compromiso: {}", bonitaError.getMessage(), bonitaError);
+                
+                // Si Bonita falla, seguir con el proceso pero indicarlo
+                response.put("message", "Compromiso aceptado (Bonita no disponible)");
+                response.put("bonita_enabled", false);
+                response.put("bonita_error", bonitaError.getMessage());
+            }
+            
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            logger.error("Error al aceptar el compromiso {}: {}", compromisoId, e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Error al aceptar el compromiso: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
+
+    @PutMapping("/{pedidoId}/compromisos/{compromisoId}/rechazar/{proyectoId}")
+    public ResponseEntity<?> rechazarCompromiso(
+            @PathVariable Long pedidoId, 
+            @PathVariable Long compromisoId,
+            @PathVariable Long proyectoId) {
+        try {
+            // Preparar respuesta exitosa inicial
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Compromiso rechazado exitosamente");
+
+            try {
+                // Obtener el bonitaCaseId del proyecto
+                String bonitaCaseId = obtenerBonitaCaseIdDelPedido(proyectoId);
+                
+                if (bonitaCaseId != null) {
+                    // Llamar al proceso de Bonita para analizar el compromiso (rechazado)
+                    // Bonita se encargará de actualizar el estado en el Cloud
+                    bonitaBusinessSvc.analizarCompromiso(
+                        bonitaCaseId,
+                        false, // aceptado = false
+                        compromisoId
+                    );
+                    
+                    response.put("message", "Compromiso rechazado y proceso Bonita avanzado exitosamente");
+                    response.put("bonita_case_id", bonitaCaseId);
+                    response.put("bonita_enabled", true);
+                } else {
+                    response.put("message", "Compromiso rechazado (no se encontró caso Bonita asociado)");
+                    response.put("bonita_enabled", false);
+                }
+            } catch (Exception bonitaError) {
+                logger.error("Error en Bonita al analizar compromiso: {}", bonitaError.getMessage(), bonitaError);
+                
+                // Si Bonita falla, seguir con el proceso pero indicarlo
+                response.put("message", "Compromiso rechazado (Bonita no disponible)");
+                response.put("bonita_enabled", false);
+                response.put("bonita_error", bonitaError.getMessage());
+            }
+            
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            logger.error("Error al rechazar el compromiso {}: {}", compromisoId, e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Error al rechazar el compromiso: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 
