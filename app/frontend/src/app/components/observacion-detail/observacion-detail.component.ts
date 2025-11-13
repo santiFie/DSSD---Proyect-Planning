@@ -61,8 +61,11 @@ export class ObservacionDetailComponent implements OnInit {
         this.newCorreccion.observacionId = observacion.id;
         
         // Verificar si el usuario puede agregar correcciones
+        // Solo usuarios normales (USER) de la ONG pueden agregar correcciones
+        // DIRECTIVO y ADMIN no pueden agregar correcciones, solo aprobar/rechazar
         const currentUser = this.authService.getCurrentUser();
         this.canAddCorreccion = 
+          !this.isDirectivo &&
           currentUser?.ongId === observacion.ongId && 
           (observacion.estado === 'PENDIENTE' || observacion.estado === 'EN_REVISION');
       },

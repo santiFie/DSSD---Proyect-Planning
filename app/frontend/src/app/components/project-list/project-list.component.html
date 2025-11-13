@@ -67,18 +67,17 @@
 
       <form (ngSubmit)="createObservacion()">
         <div class="form-group">
-          <label for="ongId">ONG Responsable *</label>
-          <select 
+          <label for="ongId">ONG responsable</label>
+          <input 
+            type="text" 
             class="form-control" 
-            id="ongId" 
-            [(ngModel)]="newObservacion.ongId" 
-            name="ongId"
-            required>
-            <option value="0">Seleccione una ONG</option>
-            <option *ngFor="let ong of ongs" [value]="ong.id">
-              {{ ong.name }}
-            </option>
-          </select>
+            id="ongResponsable" 
+            [value]="getOngNameForObservacion()"
+            readonly
+            disabled>
+          <small class="form-text text-muted">
+            La ONG responsable se establece automáticamente según el proyecto.
+          </small>
         </div>
 
         <div class="form-group">

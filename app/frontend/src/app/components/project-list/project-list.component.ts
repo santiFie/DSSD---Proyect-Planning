@@ -100,7 +100,7 @@ export class ProjectListComponent implements OnInit {
     this.newObservacion = {
       descripcion: '',
       proyectoId: project.id || 0,
-      ongId: 0
+      ongId: project.ongOriginante || 0  // Establecer automáticamente la ONG del proyecto
     };
     this.showObservacionModal = true;
     this.error = null;
@@ -118,8 +118,13 @@ export class ProjectListComponent implements OnInit {
   }
 
   createObservacion(): void {
-    if (!this.newObservacion.descripcion || !this.newObservacion.ongId) {
-      this.error = 'Por favor complete todos los campos';
+    if (!this.newObservacion.descripcion) {
+      this.error = 'Por favor ingrese la descripción de la observación';
+      return;
+    }
+
+    if (!this.newObservacion.ongId) {
+      this.error = 'No se pudo determinar la ONG del proyecto';
       return;
     }
 
@@ -144,5 +149,14 @@ export class ProjectListComponent implements OnInit {
         this.loadingObservacion = false;
       }
     });
+  }
+  
+  getOngNameForObservacion(): string {
+    if (!this.newObservacion.ongId) {
+      return 'ONG del proyecto';
+    }
+    
+    const ong = this.ongs.find(o => o.id === this.newObservacion.ongId);
+    return ong?.name || 'ONG del proyecto';
   }
 }

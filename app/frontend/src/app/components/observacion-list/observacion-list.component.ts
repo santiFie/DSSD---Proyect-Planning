@@ -129,8 +129,17 @@ export class ObservacionListComponent implements OnInit {
   }
 
   createObservacion(): void {
-    if (!this.newObservacion.descripcion || !this.newObservacion.proyectoId || !this.newObservacion.ongId) {
-      this.errorMessage = 'Por favor complete todos los campos';
+    if (!this.newObservacion.descripcion || !this.newObservacion.proyectoId) {
+      this.errorMessage = 'Por favor complete todos los campos requeridos';
+      return;
+    }
+
+    // Establecer automáticamente la ONG del proyecto seleccionado
+    const proyectoSeleccionado = this.proyectos.find(p => p.id === this.newObservacion.proyectoId);
+    if (proyectoSeleccionado && proyectoSeleccionado.ongOriginante) {
+      this.newObservacion.ongId = proyectoSeleccionado.ongOriginante;
+    } else {
+      this.errorMessage = 'No se pudo determinar la ONG del proyecto seleccionado';
       return;
     }
 
@@ -181,6 +190,20 @@ export class ObservacionListComponent implements OnInit {
       proyectoId: 0,
       ongId: 0
     };
+  }
+
+  getOngNameForSelectedProject(): string {
+    if (this.newObservacion.proyectoId === 0) {
+      return '';
+    }
+    
+    const proyecto = this.proyectos.find(p => p.id === this.newObservacion.proyectoId);
+    if (!proyecto || !proyecto.ongOriginante) {
+      return 'ONG del proyecto';
+    }
+    
+    const ong = this.ongs.find(o => o.id === proyecto.ongOriginante);
+    return ong?.name || 'ONG del proyecto';
   }
 
   getEstadoClass(estado: string): string {

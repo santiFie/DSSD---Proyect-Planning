@@ -39,19 +39,18 @@
           </select>
         </div>
 
-        <div class="mb-3">
-          <label for="ongId" class="form-label">ONG Responsable *</label>
-          <select 
-            class="form-select" 
-            id="ongId" 
-            [(ngModel)]="newObservacion.ongId" 
-            name="ongId"
-            required>
-            <option value="0">Seleccione una ONG</option>
-            <option *ngFor="let ong of ongs" [value]="ong.id">
-              {{ ong.name }}
-            </option>
-          </select>
+        <div class="mb-3" *ngIf="newObservacion.proyectoId > 0">
+          <label for="ongResponsable" class="form-label">ONG Responsable</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="ongResponsable" 
+            [value]="getOngNameForSelectedProject()"
+            readonly
+            disabled>
+          <small class="form-text text-muted">
+            La ONG responsable se establece automáticamente según el proyecto seleccionado.
+          </small>
         </div>
 
         <div class="mb-3">

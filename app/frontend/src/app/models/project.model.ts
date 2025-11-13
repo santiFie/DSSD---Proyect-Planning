@@ -19,6 +19,7 @@ export interface Project {
   startDate: string;
   endDate: string;
   neighborhood?: string;
+  ongOriginante?: number;
   stages: Stage[];
 }
 
