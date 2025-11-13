@@ -1,28 +1,92 @@
-.badge-warning {
-  background-color: #ffc107;
-  color: #000;
+// Badges
+.badge-warning{background-color:#ffc107;color:#000}
+.badge-info{background-color:#17a2b8;color:#fff}
+.badge-success{background-color:#28a745;color:#fff}
+.badge-danger{background-color:#dc3545;color:#fff}
+.badge-secondary{background-color:#6c757d;color:#fff}
+.card-header{background-color:#f8f9fa}
+.correction-container{display:flex;flex-direction:column}
+
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+.rechazo-container {
+  display: flex;
+  flex-direction: column;
 }
 
-.badge-info {
-  background-color: #17a2b8;
-  color: #fff;
+// Base común para formularios
+.correccion-form-container,.rechazo-form-container{
+  border-radius:12px;
+  padding:1.5rem;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+  transition:all .3s;
+  animation:slideDown .3s ease;
+
+  .form-header{
+    margin-bottom:1.25rem;
+    padding-bottom:1rem;
+    h6{font-size:1.1rem;font-weight:600;margin-bottom:.25rem;i{margin-right:.5rem}}
+    small{color:#6c757d;font-size:.875rem}
+  }
+
+  .form-label{color:#2c3e50;font-size:.95rem;margin-bottom:.5rem;.text-danger{font-weight:bold}}
+
+  textarea{
+    border-radius:8px;
+    padding:.875rem;
+    font-size:.95rem;
+    transition:all .3s;
+    resize:vertical;
+    outline:0;
+    &::placeholder{color:#a0a6b1;font-style:italic}
+    &:disabled{background-color:#f8f9fa;cursor:not-allowed}
+  }
+
+  .form-text{display:flex;align-items:center;gap:.25rem;margin-top:.5rem;font-size:.85rem}
+
+  .form-actions{
+    display:flex;
+    gap:.75rem;
+    margin-top:1.5rem;
+
+    .btn-action{
+      font-weight:500;
+      padding:.625rem 1.5rem;
+      border-radius:8px;
+      transition:all .3s;
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      &:disabled{opacity:.65;cursor:not-allowed}
+      &:hover:not(:disabled){transform:translateY(-1px)}
+    }
+
+    .btn-outline-secondary{
+      border:2px solid #e3e6f0;
+      color:#6c757d;
+      &:hover:not(:disabled){background-color:#f8f9fa;border-color:#d1d3e2;color:#5a5c69}
+    }
+  }
 }
 
-.badge-success {
-  background-color: #28a745;
-  color: #fff;
+// Corrección (azul)
+.correccion-form-container{
+  background:linear-gradient(135deg,#f8f9ff 0%,#fff 100%);
+  border:2px solid #e3e6f0;
+  &:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .form-header{border-bottom:2px solid #e3e6f0;h6{color:#2c3e50;i{color:#4e73df}}}
+  .correccion-textarea{border:2px solid #e3e6f0;min-height:120px;&:focus{border-color:#4e73df;box-shadow:0 0 0 .2rem rgba(78,115,223,.15)}}
+  .form-text i{color:#4e73df}
+  .btn-primary{background:linear-gradient(135deg,#4e73df 0%,#224abe 100%);border:0;&:hover:not(:disabled){background:linear-gradient(135deg,#224abe 0%,#1e3a8a 100%);box-shadow:0 4px 8px rgba(78,115,223,.3)}}
 }
 
-.badge-danger {
-  background-color: #dc3545;
-  color: #fff;
-}
-
-.badge-secondary {
-  background-color: #6c757d;
-  color: #fff;
-}
-
-.card-header {
-  background-color: #f8f9fa;
+// Rechazo (rojo)
+.rechazo-form-container{
+  background:linear-gradient(135deg,#fff5f5 0%,#fff 100%);
+  border:2px solid #fecaca;
+  &:hover{box-shadow:0 4px 12px rgba(220,53,69,.15)}
+  .form-header{border-bottom:2px solid #fecaca;h6{color:#991b1b;i{color:#dc3545}}}
+  .rechazo-textarea{border:2px solid #fecaca;min-height:100px;&:focus{border-color:#dc3545;box-shadow:0 0 0 .2rem rgba(220,53,69,.15)}}
+  .form-text i{color:#dc3545}
+  .btn-danger{background:linear-gradient(135deg,#dc3545 0%,#c82333 100%);border:0;&:hover:not(:disabled){background:linear-gradient(135deg,#c82333 0%,#bd2130 100%);box-shadow:0 4px 8px rgba(220,53,69,.3)}}
 }
