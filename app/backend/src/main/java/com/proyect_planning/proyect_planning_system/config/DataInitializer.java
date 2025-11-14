@@ -55,6 +55,16 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             userRepository.save(regularUser);
             logger.info("Usuario regular creado - Username: user, Password: user123");
+            
+            // Crear un usuario directivo de ejemplo
+            User directivoUser = User.builder()
+                    .username("directivo")
+                    .password(passwordEncoder.encode("directivo123"))
+                    .role(Role.DIRECTIVO)
+                    .ong(defaultOng)
+                    .build();
+            userRepository.save(directivoUser);
+            logger.info("Usuario directivo creado - Username: directivo, Password: directivo123");
         } else {
             logger.info("Los datos ya han sido inicializados previamente");
         }

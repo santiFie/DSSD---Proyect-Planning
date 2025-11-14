@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.proyect_planning.proyect_planning_system.entities.Correccion;
+import com.proyect_planning.proyect_planning_system.entities.Observacion;
 import com.proyect_planning.proyect_planning_system.entities.Proyect;
 import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.services.bonita.exception.BonitaException;
@@ -146,4 +148,166 @@ public class BonitaBusinessService {
         }
     }
 
+
+        /**
+     * Registra una nueva observación en Bonita, iniciando el proceso "Revision_Consejo"
+     * y ejecutando automáticamente la tarea "Análisis y creación de revisiones"
+     * 
+     * @param observacion La observación a registrar
+     * @return El ID del caso (caseId) creado en Bonita
+     * @throws BonitaException Ante un error en la comunicación con Bonita
+     */
+    public String registrarObservacionEnBonita(Observacion observacion) throws BonitaException {
+        // Obtener el ID del proceso "Revision_Consejo"
+        String processId = bonitaApiSvc.getProcessId("Revision_Consejo");
+
+        // Preparar variables para el proceso
+        Map<String, Object> processVariables = new HashMap<>();
+        
+        Map<String, Object> observacionInput = new HashMap<>();
+        observacionInput.put("id", observacion.getId());
+        observacionInput.put("descripcion", observacion.getDescripcion());
+        observacionInput.put("proyectoId", observacion.getProyecto().getId());
+        observacionInput.put("ongId", observacion.getOng().getId());
+        observacionInput.put("estado", observacion.getEstado().toString());
+        observacionInput.put("fechaCreacion", observacion.getFechaCreacion().toString());
+        observacionInput.put("fechaLimite", observacion.getFechaLimite().toString());
+        
+        List<Map<String, Object>> observacionesInput = new ArrayList<>();
+        observacionesInput.add(observacionInput);
+        processVariables.put("observacionesInput", observacionesInput);
+
+        logger.info("Variables para Bonita (Observación): {}", processVariables);
+
+        // Iniciar el proceso en Bonita
+        Map<String, String> processInstance = bonitaApiSvc.startProcessInstance(processId, processVariables);
+        String caseId = processInstance.get("caseId");
+
+        // Buscar la tarea "Análisis y creación de revisiones"
+        List<Map<String, String>> humanTasks = bonitaApiSvc.getTasksByCaseId(caseId);
+
+        if (humanTasks != null && !humanTasks.isEmpty()) {
+            logger.info("Tarea humana encontrada para observación: {}", humanTasks.get(0));
+            
+            // Preparar el objeto de observación para la tarea con el formato requerido por Bonita
+            Map<String, Object> observacionParaTarea = new HashMap<>();
+            observacionParaTarea.put("persistenceId_string", caseId);
+            observacionParaTarea.put("estado", observacion.getEstado().toString());
+            
+            // Crear el array de observaciones
+            List<Map<String, Object>> observacionesArray = new ArrayList<>();
+            observacionesArray.add(observacionParaTarea);
+            
+            // Crear el objeto taskData con el formato correcto
+            Map<String, Object> taskData = new HashMap<>();
+            taskData.put("observacionesInput", observacionesArray);
+            
+            bonitaApiSvc.executeTask(humanTasks.get(0).get("id"), taskData);
+            logger.info("Tarea ejecutada para observación con caseId: {}", caseId);
+        } else {
+            logger.warn("No se encontraron tareas humanas para la observación, caso ID: {}", caseId);
+        }
+
+        return caseId;
+    }
+
+    /**
+     * Notifica a Bonita que se ha agregado una corrección, ejecutando la tarea
+     * "Resolver Observaciones" por parte del usuario de la ONG
+     * 
+     * @param observacion La observación que recibe la corrección
+     * @param correccion La corrección agregada
+     * @throws BonitaException Ante un error en la comunicación con Bonita
+     */
+    public void notificarCorreccionEnBonita(Observacion observacion, Correccion correccion) throws BonitaException {
+        if (observacion.getBonitaCaseId() == null) {
+            logger.warn("La observación {} no tiene un caso en Bonita asociado", observacion.getId());
+            return;
+        }
+
+        List<Map<String, String>> tareas = bonitaApiSvc.getTasksByCaseId(observacion.getBonitaCaseId());
+        if (tareas != null && !tareas.isEmpty()) {
+            // Buscar la tarea "Resolver Observaciones"
+            Map<String, String> tarea = tareas.stream()
+                    .filter(t -> t.get("name").contains("Resolver Observaciones"))
+                    .findFirst()
+                    .orElse(null);
+
+            if (tarea != null) {
+                // Preparar el objeto de corrección según el contrato de Bonita
+                Map<String, Object> correccionInput = new HashMap<>();
+                correccionInput.put("id", correccion.getId());
+                correccionInput.put("fechaCreacion", correccion.getFechaCreacion().toString());
+                correccionInput.put("detalle", correccion.getDetalle());
+                correccionInput.put("usuarioId", correccion.getUsuario().getId());
+                correccionInput.put("observacionId", observacion.getId());
+                
+                // Crear el taskData con el formato esperado por Bonita
+                Map<String, Object> taskData = new HashMap<>();
+                taskData.put("correccion", correccionInput);
+                
+                bonitaApiSvc.executeTask(tarea.get("id"), taskData);
+                logger.info("Corrección notificada en Bonita para la observación {}. CorreccionId: {}", 
+                    observacion.getId(), correccion.getId());
+            } else {
+                logger.warn("No se encontró la tarea 'Resolver Observaciones' para el caso {}", 
+                    observacion.getBonitaCaseId());
+            }
+        }
+    }
+
+    /**
+     * Actualiza el estado de la observación en Bonita (para aprobar/rechazar corrección)
+     * Este método se llama cuando un directivo/admin marca la observación como RESUELTA o la rechaza
+     */
+    public void actualizarEstadoObservacionEnBonita(Observacion observacion) throws BonitaException {
+        if (observacion.getBonitaCaseId() == null) {
+            logger.warn("La observación {} no tiene un caso en Bonita asociado", observacion.getId());
+            return;
+        }
+
+        List<Map<String, String>> tareas = bonitaApiSvc.getTasksByCaseId(observacion.getBonitaCaseId());
+        if (tareas != null && !tareas.isEmpty()) {
+            // Buscar la tarea "Verificar Correcciones"
+            Map<String, String> tarea = tareas.stream()
+                    .filter(t -> t.get("name").contains("Verificar Correcciones"))
+                    .findFirst()
+                    .orElse(null);
+
+            if (tarea != null) {
+                // Preparar el objeto observacion con el nuevo estado
+                Map<String, Object> observacionInput = new HashMap<>();
+                observacionInput.put("id", observacion.getId());
+                observacionInput.put("estado", observacion.getEstado().toString());
+                
+                // Crear el taskData
+                Map<String, Object> taskData = new HashMap<>();
+                taskData.put("observacion", observacionInput);
+                
+                bonitaApiSvc.executeTask(tarea.get("id"), taskData);
+                logger.info("Estado de observación actualizado en Bonita: {} - Estado: {}", 
+                    observacion.getId(), observacion.getEstado());
+            } else {
+                logger.warn("No se encontró la tarea 'Verificar Correcciones' para el caso {}", 
+                    observacion.getBonitaCaseId());
+            }
+        }
+    }
+
+    /**
+     * @deprecated Use actualizarEstadoObservacionEnBonita instead
+     */
+    @Deprecated
+    public void resolverObservacionEnBonita(Observacion observacion) throws BonitaException {
+        actualizarEstadoObservacionEnBonita(observacion);
+    }
+
+    public void notificarVencimientoEnBonita(Observacion observacion) throws BonitaException {
+        if (observacion.getBonitaCaseId() == null) {
+            return;
+        }
+
+        // Aquí podrías implementar una notificación especial en Bonita
+        logger.warn("Observación {} ha vencido el plazo de 5 días", observacion.getId());
+    }
 }

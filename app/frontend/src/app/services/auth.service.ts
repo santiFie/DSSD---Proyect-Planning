@@ -64,4 +64,9 @@ export class AuthService {
     const user = this.getCurrentUser();
     return user?.role === 'ADMIN';
   }
+
+  isDirectivo(): boolean {
+    const user = this.getCurrentUser();
+    return user?.role === 'DIRECTIVO';
+  }
 }

@@ -1,0 +1,179 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Observaciones de Proyectos</h2>
+    <button *ngIf="isDirectivo" class="btn btn-primary" (click)="toggleCreateForm()">
+      <i class="bi bi-plus-circle"></i> Nueva Observación
+    </button>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+  </div>
+
+  <!-- Formulario de creación -->
+  <div *ngIf="showCreateForm && isDirectivo" class="card mb-4">
+    <div class="card-header">
+      <h5>Crear Nueva Observación</h5>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="createObservacion()">
+        <div class="mb-3">
+          <label for="proyectoId" class="form-label">Proyecto *</label>
+          <select 
+            class="form-select" 
+            id="proyectoId" 
+            [(ngModel)]="newObservacion.proyectoId" 
+            name="proyectoId"
+            required>
+            <option value="0">Seleccione un proyecto</option>
+            <option *ngFor="let proyecto of proyectos" [value]="proyecto.id">
+              {{ proyecto.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3" *ngIf="newObservacion.proyectoId > 0">
+          <label for="ongResponsable" class="form-label">ONG Responsable</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="ongResponsable" 
+            [value]="getOngNameForSelectedProject()"
+            readonly
+            disabled>
+          <small class="form-text text-muted">
+            La ONG responsable se establece automáticamente según el proyecto seleccionado.
+          </small>
+        </div>
+
+        <div class="mb-3">
+          <label for="descripcion" class="form-label">Descripción de la Observación *</label>
+          <textarea 
+            class="form-control" 
+            id="descripcion" 
+            rows="4" 
+            [(ngModel)]="newObservacion.descripcion" 
+            name="descripcion"
+            placeholder="Describa la observación o mejora sugerida..."
+            required></textarea>
+        </div>
+
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle"></i>
+          La ONG tendrá <strong>5 días</strong> para resolver esta observación.
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            Crear Observación
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="toggleCreateForm()">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filtro por proyecto (solo para directivos) -->
+  <div *ngIf="isDirectivo" class="card mb-3">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <label for="filtroProyecto" class="form-label">Filtrar por Proyecto</label>
+          <select 
+            class="form-select" 
+            id="filtroProyecto" 
+            (change)="loadObservacionesByProyecto(+$any($event.target).value)">
+            <option value="0">Todos los proyectos</option>
+            <option *ngFor="let proyecto of proyectos" [value]="proyecto.id">
+              {{ proyecto.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de observaciones -->
+  <div class="row">
+    <div class="col-12">
+      <div *ngIf="observaciones.length === 0" class="alert alert-info">
+        No hay observaciones registradas.
+      </div>
+
+      <div *ngFor="let obs of observaciones" class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge" [ngClass]="getEstadoClass(obs.estado)">
+              {{ obs.estado }}
+            </span>
+            <strong class="ms-2">{{ obs.proyectoNombre }}</strong>
+          </div>
+          <small class="text-muted">
+            <i class="bi bi-calendar"></i> 
+            {{ obs.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+          </small>
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ obs.descripcion }}</p>
+          
+          <div class="row mt-3">
+            <div class="col-md-6">
+              <small class="text-muted">
+                <i class="bi bi-building"></i> ONG: {{ obs.ongNombre }}
+              </small>
+            </div>
+            <div class="col-md-6 text-end">
+              <small 
+                class="text-muted"
+                [ngClass]="{
+                  'text-danger': getDiasRestantes(obs.fechaLimite) < 2 && obs.estado !== 'RESUELTA',
+                  'text-warning': getDiasRestantes(obs.fechaLimite) >= 2 && getDiasRestantes(obs.fechaLimite) < 4 && obs.estado !== 'RESUELTA'
+                }">
+                <i class="bi bi-clock"></i> 
+                <ng-container *ngIf="obs.estado === 'RESUELTA'">
+                  Resuelta el {{ obs.fechaResolucion | date:'dd/MM/yyyy' }}
+                </ng-container>
+                <ng-container *ngIf="obs.estado !== 'RESUELTA'">
+                  <ng-container *ngIf="getDiasRestantes(obs.fechaLimite) > 0">
+                    {{ getDiasRestantes(obs.fechaLimite) }} días restantes
+                  </ng-container>
+                  <ng-container *ngIf="getDiasRestantes(obs.fechaLimite) <= 0">
+                    ¡Plazo vencido!
+                  </ng-container>
+                </ng-container>
+              </small>
+            </div>
+          </div>
+
+          <div class="mt-3" *ngIf="obs.correcciones && obs.correcciones.length > 0">
+            <small class="text-muted">
+              <i class="bi bi-check-circle"></i> 
+              {{ obs.correcciones.length }} corrección(es) registrada(s)
+            </small>
+          </div>
+        </div>
+        <div class="card-footer d-flex gap-2">
+          <button class="btn btn-sm btn-outline-primary" (click)="verDetalles(obs.id)">
+            <i class="bi bi-eye"></i> Ver Detalles
+          </button>
+          <button 
+            *ngIf="isDirectivo && obs.estado !== 'RESUELTA'" 
+            class="btn btn-sm btn-outline-success" 
+            (click)="resolverObservacion(obs.id)">
+            <i class="bi bi-check-circle"></i> Marcar como Resuelta
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

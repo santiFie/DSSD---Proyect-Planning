@@ -1,7 +1,7 @@
 export interface User {
   id: number;
   username: string;
-  role: 'ADMIN' | 'USER';
+  role: 'ADMIN' | 'USER' | 'DIRECTIVO';
   ongId: number;
   ongName: string;
 }

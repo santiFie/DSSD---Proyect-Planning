@@ -7,6 +7,7 @@
     <div class="navbar-menu">
       <a routerLink="/projects" routerLinkActive="active">Proyectos</a>
       <a routerLink="/pedidos" routerLinkActive="active">Pedidos</a>
+      <a routerLink="/observaciones" routerLinkActive="active">Observaciones</a>
 
       <div class="admin-menu" *ngIf="isAdmin()">
         <a routerLink="/admin/users" routerLinkActive="active">👥 Usuarios</a>
@@ -17,7 +18,7 @@
     <div class="navbar-user">
       <div class="user-info">
         <span class="username">{{ currentUser.username }}</span>
-        <span class="role" [class.admin]="currentUser.role === 'ADMIN'">
+        <span class="role" [class.admin]="currentUser.role === 'ADMIN'" [class.directivo]="currentUser.role === 'DIRECTIVO'">
           {{ currentUser.role }}
         </span>
         <span class="ong">{{ currentUser.ongName }}</span>
