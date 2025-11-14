@@ -46,6 +46,9 @@ public class Stage {
     @Builder.Default
     private List<Revision> revisions = new ArrayList<>();
 
+    @Column(nullable = false)
+    private String category;
+
     // En Stage
     public void addRevision(Revision revision) {
         revisions.add(revision);

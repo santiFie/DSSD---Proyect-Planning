@@ -10,6 +10,7 @@ export interface Stage {
   covered: boolean;
   startDate: string;
   endDate?: string;
+  category: string;
 }
 
 export interface Project {

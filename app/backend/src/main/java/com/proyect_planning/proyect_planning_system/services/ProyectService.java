@@ -103,6 +103,7 @@ public class ProyectService {
                         .covered(stageDto.getCovered() != null ? stageDto.getCovered() : false)
                         .startDate(stageDto.getStartDate())
                         .endDate(stageDto.getEndDate())
+                        .category(stageDto.getCategory())
                         .proyect(proyect)
                         .build();
                 
