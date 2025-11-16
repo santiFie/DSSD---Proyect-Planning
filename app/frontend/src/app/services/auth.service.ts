@@ -28,6 +28,7 @@ export class AuthService {
           const user: User = {
             id: response.userId,
             username: response.username,
+            email: response.email,
             role: response.role,
             ongId: response.ongId,
             ongName: response.ongName

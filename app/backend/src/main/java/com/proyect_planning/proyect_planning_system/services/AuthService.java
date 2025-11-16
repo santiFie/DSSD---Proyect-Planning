@@ -38,6 +38,7 @@ public class AuthService {
         var user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .email(request.getEmail() != null ? request.getEmail() : request.getUsername() + "@example.com")
                 .role(request.getRole())
                 .ong(ong)
                 .build();
@@ -50,6 +51,7 @@ public class AuthService {
                 .token(jwtToken)
                 .userId(user.getId())
                 .username(user.getUsername())
+                .email(user.getEmail())
                 .role(user.getRole())
                 .ongId(ong.getId())
                 .ongName(ong.getName())
@@ -73,6 +75,7 @@ public class AuthService {
                 .token(jwtToken)
                 .userId(user.getId())
                 .username(user.getUsername())
+                .email(user.getEmail())
                 .role(user.getRole())
                 .ongId(user.getOng().getId())
                 .ongName(user.getOng().getName())
