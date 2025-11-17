@@ -8,6 +8,9 @@
       <a routerLink="/projects" routerLinkActive="active">Proyectos</a>
       <a routerLink="/pedidos" routerLinkActive="active">Pedidos</a>
       <a routerLink="/observaciones" routerLinkActive="active">Observaciones</a>
+      <div class="admin-menu" *ngIf="isDirectivo()">        
+        <a routerLink="/indicadores" routerLinkActive="active">Indicadores</a>
+      </div>    
 
       <div class="admin-menu" *ngIf="isAdmin()">
         <a routerLink="/admin/users" routerLinkActive="active">👥 Usuarios</a>

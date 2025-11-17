@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class IndicadorPedidoFechaFinalizacionDTO {
+public class IndicadorProyectoFechaFinalizacionDTO {
 
     private Long idProject;
     private String endDateProject;

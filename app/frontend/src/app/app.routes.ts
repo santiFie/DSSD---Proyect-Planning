@@ -13,6 +13,7 @@ import { OngListComponent } from './components/ong-list/ong-list.component';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { directivoGuard } from './guards/directivo.guard';
+import { IndicadoresComponent } from './components/indicadores/indicadores.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -37,7 +38,8 @@ export const routes: Routes = [
           { path: 'users', component: UserListComponent },
           { path: 'ongs', component: OngListComponent }
         ]
-      }
+      },
+      { path: 'indicadores', component: IndicadoresComponent }
     ]
   },
   { path: '**', redirectTo: '/projects' }

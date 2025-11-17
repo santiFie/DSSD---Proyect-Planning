@@ -50,15 +50,15 @@ public class CloudService {
         authPayload.put("password", cloudPass);
         headers.set("Content-Type", "application/json");
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(authPayload, headers);
-        
+
         try {
             logger.debug("Intentando autenticar en cloud: {}", cloudBaseUrl + "/api/v1/auth/login");
             ResponseEntity<UserCloudDTO> response = restTemplate.exchange(
                     cloudBaseUrl + "/api/v1/auth/login",
                     HttpMethod.POST,
-                    requestEntity, 
+                    requestEntity,
                     UserCloudDTO.class);
-            
+
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
                     && response.getBody().getToken() != null) {
                 jwtToken = response.getBody().getToken().getToken();
@@ -69,11 +69,11 @@ public class CloudService {
                 throw new CloudException("Error al loguearse en cloud (ver logs)");
             }
         } catch (Exception e) {
-            logger.error("Excepción al intentar autenticar en cloud: URL={}, Error={}", 
+            logger.error("Excepción al intentar autenticar en cloud: URL={}, Error={}",
                     cloudBaseUrl + "/api/v1/auth/login", e.getMessage(), e);
             throw new CloudException("No se pudo conectar al servicio cloud: " + e.getMessage(), e);
         }
-        
+
         headers.set("Authorization", jwtToken);
         return headers;
     }
@@ -100,22 +100,39 @@ public class CloudService {
         }
     }
 
+    /**
+     * Obtiene los compromisos asociados a un pedido específico desde la API de
+     * cloud
+     * 
+     * @param pedidoId ID del pedido
+     * @return Lista de compromisos
+     * @throws CloudException si hay un error al obtener los compromisos
+     */
     public List<CompromisoCloudDTO> getCompromisosByPedidoId(Long pedidoId) throws CloudException {
         HttpHeaders headers = getAuthenticatedHeaders();
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-        ResponseEntity<List<CompromisoCloudDTO>> response = restTemplate.exchange(cloudBaseUrl + "/api/v1/pedidos/" + pedidoId + "/compromisos",
+        ResponseEntity<List<CompromisoCloudDTO>> response = restTemplate.exchange(
+                cloudBaseUrl + "/api/v1/pedidos/" + pedidoId + "/compromisos",
                 HttpMethod.GET,
                 requestEntity, new ParameterizedTypeReference<List<CompromisoCloudDTO>>() {
                 });
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             return response.getBody();
         } else {
-            logger.error("Error al obtener compromisos de cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
+            logger.error("Error al obtener compromisos de cloud. HttpStatus: {}, Response: {}",
+                    response.getStatusCode(),
                     response.getBody());
             throw new CloudException("Error al obtener compromisos de cloud (ver logs)");
         }
     }
 
+    /**
+     * Obtiene un pedido por su ID desde la API de cloud
+     * 
+     * @param pedidoId ID del pedido
+     * @return PedidoCloudDTO con los datos del pedido
+     * @throws CloudException si hay un error al obtener el pedido
+     */
     public PedidoCloudDTO getPedidoById(Long pedidoId) throws CloudException {
         HttpHeaders headers = getAuthenticatedHeaders();
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
@@ -125,7 +142,7 @@ public class CloudService {
                     HttpMethod.GET,
                     requestEntity,
                     PedidoCloudDTO.class);
-            
+
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 return response.getBody();
             } else {
@@ -136,6 +153,32 @@ public class CloudService {
         } catch (Exception e) {
             logger.error("Excepción al obtener pedido {}: {}", pedidoId, e.getMessage(), e);
             throw new CloudException("No se pudo obtener el pedido: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Obtiene los compromisos asociados a una etapa específica desde la API de
+     * cloud
+     * 
+     * @param etapaId ID de la etapa
+     * @return Lista de compromisos
+     * @throws CloudException si hay un error al obtener los compromisos
+     */
+    public List<CompromisoCloudDTO> getCompromisosByEtapaId(Long etapaId) throws CloudException {
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+        ResponseEntity<List<CompromisoCloudDTO>> response = restTemplate.exchange(
+                cloudBaseUrl + "/api/v1/compromisos?etapaId=" + etapaId,
+                HttpMethod.GET,
+                requestEntity, new ParameterizedTypeReference<List<CompromisoCloudDTO>>() {
+                });
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return response.getBody();
+        } else {
+            logger.error("Error al obtener compromisos de cloud. HttpStatus: {}, Response: {}",
+                    response.getStatusCode(),
+                    response.getBody());
+            throw new CloudException("Error al obtener compromisos de cloud (ver logs)");
         }
     }
 

@@ -9,5 +9,8 @@ import java.util.Optional;
 @Repository
 public interface OngRepository extends JpaRepository<Ong, Long> {
     boolean existsByName(String name);
+
     Optional<Ong> findByName(String name);
+
+    Optional<Ong> findById(Long id);
 }

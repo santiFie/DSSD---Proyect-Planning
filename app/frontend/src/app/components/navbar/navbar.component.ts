@@ -33,4 +33,8 @@ export class NavbarComponent implements OnInit {
   isAdmin(): boolean {
     return this.authService.isAdmin();
   }
+
+  isDirectivo(): boolean {
+    return this.authService.isDirectivo();
+  }
 }
