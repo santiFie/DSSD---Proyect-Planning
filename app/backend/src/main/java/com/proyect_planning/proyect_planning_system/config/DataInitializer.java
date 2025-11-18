@@ -40,11 +40,12 @@ public class DataInitializer implements CommandLineRunner {
             User adminUser = User.builder()
                     .username("admin")
                     .password(passwordEncoder.encode("admin123"))
+                    .email("admin@sistema.com")
                     .role(Role.ADMIN)
                     .ong(defaultOng)
                     .build();
             userRepository.save(adminUser);
-            logger.info("Usuario admin creado - Username: admin, Password: admin123");
+            logger.info("Usuario admin creado - Username: admin, Password: admin123, Email: admin@sistema.com");
             
             // Crear un usuario regular de ejemplo
             Ong ongGeneral = Ong.builder()
@@ -55,10 +56,12 @@ public class DataInitializer implements CommandLineRunner {
             User regularUser = User.builder()
                     .username("ongeneral")
                     .password(passwordEncoder.encode("user123"))
+                    .email("user@sistema.com")
                     .role(Role.USER)
                     .ong(ongGeneral)
                     .build();
             userRepository.save(regularUser);
+            logger.info("Usuario regular creado - Username: user, Password: user123, Email: user@sistema.com");
             logger.info("Usuario regular creado - Username: ongeneral, Password: user123");
 
             // Crear un usuario regular de ejemplo
@@ -105,16 +108,17 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             userRepository.save(usuarioDinero);
             logger.info("Usuario regular creado - Username: ongdinero, Password: user123");
-            
+
             // Crear un usuario directivo de ejemplo
             User directivoUser = User.builder()
                     .username("directivo")
                     .password(passwordEncoder.encode("directivo123"))
+                    .email("directivo@sistema.com")
                     .role(Role.DIRECTIVO)
                     .ong(defaultOng)
                     .build();
             userRepository.save(directivoUser);
-            logger.info("Usuario directivo creado - Username: directivo, Password: directivo123");
+            logger.info("Usuario directivo creado - Username: directivo, Password: directivo123, Email: directivo@sistema.com");
         } else {
             logger.info("Los datos ya han sido inicializados previamente");
         }

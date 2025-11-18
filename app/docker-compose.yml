@@ -24,6 +24,14 @@ services:
     depends_on:
       - db
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # Puerto SMTP
+      - "8025:8025"  # Interfaz Web UI
+
   backend:
     build: ./backend
     container_name: java_backend
@@ -32,11 +40,18 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/myappdb
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
-      BONITA_SERVER_URL: http://host.docker.internal:57960/bonita
+      BONITA_SERVER_URL: http://host.docker.internal:23253/bonita
+      CLOUD_SERVICE_URL: http://host.docker.internal:8085/Dssd2025Cloud
+      # Email Configuration - Usando MailHog para desarrollo/pruebas
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: noreply@proyect-planning.com
+      MAIL_PASSWORD: ""
     ports:
       - "8081:8081"
     depends_on:
       - db
+      - mailhog
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

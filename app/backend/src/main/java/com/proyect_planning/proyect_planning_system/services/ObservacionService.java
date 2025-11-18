@@ -37,6 +37,9 @@ public class ObservacionService {
     @Autowired
     private BonitaBusinessService bonitaBusinessService;
 
+    @Autowired
+    private EmailService emailService;
+
     /**
      * Crea una nueva observación y la registra en Bonita
      */
@@ -68,6 +71,14 @@ public class ObservacionService {
         } catch (Exception e) {
             logger.error("Error al registrar observación en Bonita: {}", e.getMessage(), e);
             // Continuamos aunque falle Bonita
+        }
+
+        // Enviar email a los usuarios de la organización del proyecto
+        try {
+            enviarEmailNuevaObservacion(observacion);
+        } catch (Exception e) {
+            logger.error("Error al enviar email de notificación: {}", e.getMessage(), e);
+            // Continuamos aunque falle el envío de email
         }
 
         return toObservacionResponse(observacion);
@@ -228,6 +239,51 @@ public class ObservacionService {
     }
 
     // ========== Métodos de conversión ==========
+
+    /**
+     * Envía un email de notificación a los usuarios de la organización del proyecto
+     */
+    private void enviarEmailNuevaObservacion(Observacion observacion) {
+        // Obtener la organización originante del proyecto
+        Long ongOriginanteId = observacion.getProyecto().getOngOriginante();
+        
+        // Buscar todos los usuarios que pertenecen a esa organización
+        List<User> usuarios = userRepository.findByOngId(ongOriginanteId);
+        
+        if (usuarios.isEmpty()) {
+            logger.warn("No se encontraron usuarios para la organización ID: {}", ongOriginanteId);
+            return;
+        }
+        
+        // Extraer los emails de los usuarios
+        List<String> emails = usuarios.stream()
+                .map(User::getEmail)
+                .filter(email -> email != null && !email.isEmpty())
+                .collect(Collectors.toList());
+        
+        if (emails.isEmpty()) {
+            logger.warn("Ningún usuario tiene email configurado para la organización ID: {}", ongOriginanteId);
+            return;
+        }
+        
+        // Obtener el nombre de la ONG
+        Ong ong = ongRepository.findById(ongOriginanteId)
+                .orElse(null);
+        String ongNombre = ong != null ? ong.getName() : "Desconocida";
+        
+        // Generar el asunto y cuerpo del email
+        String asunto = "Nueva Observación en Proyecto: " + observacion.getProyecto().getName();
+        String cuerpo = emailService.generarCuerpoEmailObservacion(
+                observacion.getProyecto().getName(),
+                observacion.getDescripcion(),
+                ongNombre,
+                observacion.getId()
+        );
+        
+        // Enviar el email
+        emailService.sendEmail(emails, asunto, cuerpo);
+        logger.info("Email enviado a {} usuarios de la organización {}", emails.size(), ongNombre);
+    }
 
     private ObservacionResponse toObservacionResponse(Observacion observacion) {
         List<CorreccionResponse> correcciones = correccionRepository
