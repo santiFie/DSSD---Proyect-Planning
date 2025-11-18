@@ -26,16 +26,30 @@ export class IndicadoresComponent implements OnInit {
   ngOnInit(): void {
     this.indicadorSvc.getProjectEndDates().subscribe({
       next: (list) => {
-        this.proyectosEnTermino = list.filter(item => item.endDateCase <= item.endDateProject).length;
-        this.proyectosFueraTermino = list.filter(item => item.endDateCase > item.endDateProject).length;
+        const totalProyectos = list.length;
+        this.proyectosEnTermino = Math.round(list.filter(item => item.endDateCase <= item.endDateProject).length * 100 / totalProyectos);
+        this.proyectosFueraTermino = Math.round(list.filter(item => item.endDateCase > item.endDateProject).length * 100 / totalProyectos);
         console.log('Indicadores de Fechas de Finalización de Proyectos:', list);
       },
       error: (error) => {
         console.error('Error al obtener los indicadores de fechas de finalización de proyectos:', error);
       }
     });
+    this.ongMasColaboradora = 'N/A';
+    this.rubroMasSolicitado = 'N/A';
+    this.top3Ongs = [];
     this.indicadorSvc.getStagesAndCommitments().subscribe({
       next: (list) => {
+        const ongCount = list.reduce((acc, item) => {
+          acc[item.ongColaboranteId] = (acc[item.ongColaboranteId] || 0) + 1;
+          return acc;
+        }, {} as Record<number, number>);
+        const ongMasFrecuente = Number(Object.entries(ongCount)
+          .sort((a, b) => b[1] - a[1])[0][0]);
+        this.ongSvc.findById(ongMasFrecuente).subscribe(ong => {
+          this.ongMasColaboradora = ong?.name ?? 'ONG Desconocida';
+        });
+
         const agrupadoPorCategoria = list.reduce((acc, item) => {
           acc[item.categoryStage] = acc[item.categoryStage] || [];
           acc[item.categoryStage].push(item);

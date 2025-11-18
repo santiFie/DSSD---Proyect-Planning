@@ -51,7 +51,7 @@ public class BonitaBusinessService {
             for (int i = 0; i < project.getStages().size(); i++) {
                 Stage stage = project.getStages().get(i);
                 Map<String, Object> etapa = new HashMap<>();
-                etapa.put("nro_orden", i + 1);
+                etapa.put("nro_orden", stage.getId());
                 etapa.put("nombre", stage.getName());
                 etapa.put("fecha_inicio", stage.getStartDate());
                 etapa.put("fecha_fin", stage.getEndDate() != null ? stage.getEndDate() : null);
