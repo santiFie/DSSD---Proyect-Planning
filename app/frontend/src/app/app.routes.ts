@@ -12,6 +12,7 @@ import { UserListComponent } from './components/user-list/user-list.component';
 import { OngListComponent } from './components/ong-list/ong-list.component';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
+import {MyCoveredProjectsComponent} from "./components/my-covered-projects/my-covered-projects.component";
 import { directivoGuard } from './guards/directivo.guard';
 import { IndicadoresComponent } from './components/indicadores/indicadores.component';
 
@@ -26,6 +27,7 @@ export const routes: Routes = [
       { path: 'projects/new', component: ProjectFormComponent },
       { path: 'projects/edit/:id', component: ProjectFormComponent },
       { path: 'my-projects', component: MyProjectsComponent },
+      { path: 'my-projects/covered', component: MyCoveredProjectsComponent },
       { path: 'pedidos', component: PedidoListComponent },
       { path: 'pedidos/:pedidoId/compromisos/:proyectoId', component: CompromisoDetailComponent },
       { path: 'compromisos/new/:id', component: CompromisoFormComponent },

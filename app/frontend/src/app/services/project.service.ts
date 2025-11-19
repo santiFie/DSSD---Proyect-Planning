@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Project, NewProjectDto } from '../models/project.model';
+import {Project, NewProjectDto, Stage} from '../models/project.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +17,10 @@ export class ProjectService {
 
   getMyProjects(): Observable<Project[]> {
     return this.http.get<Project[]>(`${this.apiUrl}/my-projects`);
+  }
+
+  getMyCoveredProjects(): Observable<Project[]> {
+    return this.http.get<Project[]>(`${this.apiUrl}/my-projects/covered`);
   }
 
   getProjectsByOng(ongId: number): Observable<Project[]> {
@@ -41,5 +45,13 @@ export class ProjectService {
 
   deleteProject(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getStagesByProjectId(projectId: number): Observable<Stage[]> {
+    return this.http.get<Stage[]>(`${this.apiUrl}/${projectId}/stages`);
+  }
+
+  executeStageByProjectId(projectId: number, stageId: number): Observable<Stage> {
+    return this.http.put<Stage>(`${this.apiUrl}/my-projects/${projectId}/execute-stage/${stageId}`, {});
   }
 }
