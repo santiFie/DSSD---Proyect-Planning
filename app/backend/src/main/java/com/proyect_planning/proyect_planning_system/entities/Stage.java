@@ -37,6 +37,10 @@ public class Stage {
     @Column
     private String endDate;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean executed = false;
+
     @ManyToOne
     @JoinColumn(name = "proyect_id", nullable = false)
     @JsonIgnore

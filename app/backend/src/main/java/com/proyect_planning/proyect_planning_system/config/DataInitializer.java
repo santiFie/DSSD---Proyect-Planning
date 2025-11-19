@@ -73,6 +73,7 @@ public class DataInitializer implements CommandLineRunner {
             User usuarioMaterial = User.builder()
                     .username("ongmaterial")
                     .password(passwordEncoder.encode("user123"))
+                    .email("ongMaterial@sistema.com")
                     .role(Role.USER)
                     .ong(ongMaterial)
                     .build();
@@ -88,6 +89,7 @@ public class DataInitializer implements CommandLineRunner {
             User usuarioManoObra = User.builder()
                     .username("ongmanoobra")
                     .password(passwordEncoder.encode("user123"))
+                    .email("ongManoObra@sistema.com")
                     .role(Role.USER)
                     .ong(ongManoObra)
                     .build();
@@ -103,6 +105,7 @@ public class DataInitializer implements CommandLineRunner {
             User usuarioDinero = User.builder()
                     .username("ongdinero")
                     .password(passwordEncoder.encode("user123"))
+                    .email("userDinero@sistema.com")
                     .role(Role.USER)
                     .ong(ongDinero)
                     .build();

@@ -52,7 +52,7 @@ public class CloudService {
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(authPayload, headers);
 
         try {
-            logger.debug("Intentando autenticar en cloud: {}", cloudBaseUrl + "/api/v1/auth/login");
+            logger.info("Intentando autenticar en cloud: {}", cloudBaseUrl + "/api/v1/auth/login");
             ResponseEntity<UserCloudDTO> response = restTemplate.exchange(
                     cloudBaseUrl + "/api/v1/auth/login",
                     HttpMethod.POST,
@@ -62,7 +62,7 @@ public class CloudService {
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
                     && response.getBody().getToken() != null) {
                 jwtToken = response.getBody().getToken().getToken();
-                logger.debug("Autenticación exitosa en cloud");
+                logger.info("Autenticación exitosa en cloud");
             } else {
                 logger.error("Error al loguearse en cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
                         response.getBody());

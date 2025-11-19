@@ -422,9 +422,12 @@ public class BonitaApiService {
                     })
                     .retryWhen(Retry.backoff(3, Duration.ofMillis(500)).jitter(0.5)
                             .filter(throwable -> throwable instanceof IllegalStateException)
-                            .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> {
-                                throw (WebClientException) retrySignal.failure();
-                            }))
+                            .doBeforeRetry(retrySignal ->
+                                    logger.warn("Reintentando obtener tareas (intento {}): {}",
+                                            retrySignal.totalRetriesInARow() + 1, retrySignal.failure().getMessage()))
+                            .onRetryExhaustedThrow((spec, signal) ->
+                                    new BonitaException("Falló la obtención de tareas después de varios intentos", signal.failure()))
+                    )
                     .block();
         } catch (Exception e) {
             logger.error("Error obteniendo tareas por caseId: {}", caseId, e);

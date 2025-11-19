@@ -21,9 +21,11 @@ public class StageDto {
     private String startDate;
     
     private String endDate;
-    
+
+    private Boolean executed = false;
+
     private String category;
-    
+
     // Constructor que convierte de entidad a DTO
     public static StageDto fromEntity(com.proyect_planning.proyect_planning_system.entities.Stage stage) {
         StageDto dto = new StageDto();
@@ -33,6 +35,7 @@ public class StageDto {
         dto.setCovered(stage.getCovered());
         dto.setStartDate(stage.getStartDate());
         dto.setEndDate(stage.getEndDate());
+        dto.setExecuted(stage.getExecuted());
         dto.setCategory(stage.getCategory());
         return dto;
     }
