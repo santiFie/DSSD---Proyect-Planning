@@ -66,7 +66,7 @@ public class BonitaBusinessService {
         processVariables.put("proyectoInput", proyectoInput);
         processVariables.put("etapasInput", etapasInput);
 
-        logger.debug("Variables para Bonita {} ", processVariables);
+        logger.info("Variables para Bonita {} ", processVariables);
 
         // Iniciar el proceso en Bonita
         Map<String, String> processInstance = bonitaApiSvc.startProcessInstance(processId, processVariables);
@@ -76,7 +76,7 @@ public class BonitaBusinessService {
 
         if (humanTasks != null && !humanTasks.isEmpty()) {
             // Ejecutar la primera tarea humana
-            logger.debug("Tarea humana encontrada: {}", humanTasks.get(0));
+            logger.info("Tarea humana encontrada: {}", humanTasks.get(0));
             bonitaApiSvc.executeTask(humanTasks.get(0).get("id"), null);
         } else {
             logger.error("No se encontraron tareas humanas para el caso ID: {}", caseId);
@@ -309,5 +309,129 @@ public class BonitaBusinessService {
 
         // Aquí podrías implementar una notificación especial en Bonita
         logger.warn("Observación {} ha vencido el plazo de 5 días", observacion.getId());
+    }
+
+    /**
+     * Obtiene los pedidos desde Bonita para un caso específico
+     * Busca la variable "jsonPedidos" en los subprocesos del caso
+     * 
+     * @param caseId ID del caso en Bonita (proceso padre)
+     * @return String JSON con los pedidos o null si no se encuentra
+     * @throws BonitaException Ante un error en la comunicación con Bonita
+     */
+    public String getPedidosFromBonita(String caseId) throws BonitaException {
+        try {
+            logger.info("Buscando jsonPedidos para caso padre: {}", caseId);
+            
+            // Obtener los subprocesos del caso padre
+            List<Map<String, Object>> subprocesses = bonitaApiSvc.getSubProcessesByCaseId(caseId);
+            
+            logger.info("  → Subprocesos encontrados: {}", subprocesses.size());
+            
+            // Buscar en cada subproceso la variable jsonPedidos
+            for (Map<String, Object> subprocess : subprocesses) {
+                String subprocessCaseId = subprocess.get("id").toString();
+                logger.info("  → Buscando en subproceso: {}", subprocessCaseId);
+                
+                // Obtener variables del subproceso
+                List<Map<String, Object>> variables = bonitaApiSvc.getVariablesByCaseId(subprocessCaseId);
+                
+                for (Map<String, Object> variable : variables) {
+                    String varName = (String) variable.get("name");
+                    
+                    if ("jsonPedidos".equals(varName)) {
+                        Object value = variable.get("value");
+                        logger.info("  ✓ jsonPedidos encontrado en subproceso {}: {}", 
+                            subprocessCaseId, value != null ? "valor presente" : "null");
+                        return value != null ? value.toString() : null;
+                    }
+                }
+            }
+            
+            logger.warn("No se encontró la variable 'jsonPedidos' en ningún subproceso del caso {}", caseId);
+            return null;
+            
+        } catch (Exception e) {
+            logger.error("Error obteniendo pedidos desde Bonita. CaseId: {}", caseId, e);
+            throw new BonitaException("Error obteniendo pedidos desde Bonita. CaseId: " + caseId, e);
+        }
+    }
+
+    /**
+     * Obtiene todos los pedidos desde todos los casos activos en Bonita
+     * Usa las tareas humanas para encontrar los subprocesos con jsonPedidos
+     * 
+     * @return Lista de mapas con información de pedidos y sus casos asociados
+     * @throws BonitaException Ante un error en la comunicación con Bonita
+     */
+    public List<Map<String, Object>> getAllPedidosFromBonita() throws BonitaException {
+        try {
+            List<Map<String, Object>> result = new ArrayList<>();
+            
+            // Obtener todas las instancias de proceso padre
+            List<Map<String, Object>> allCases = bonitaApiSvc.getProcessInstances();
+            
+            logger.info("═══ Buscando pedidos en Bonita ═══");
+            logger.info("Total de casos padre encontrados: {}", allCases.size());
+            
+            // Para cada caso padre, buscar sus tareas humanas
+            for (Map<String, Object> caseInstance : allCases) {
+                String parentCaseId = caseInstance.get("id").toString();
+                String processName = caseInstance.get("processDefinitionId") != null ? 
+                    caseInstance.get("processDefinitionId").toString() : "unknown";
+                
+                logger.info("─── Procesando caso padre: caseId={}, proceso={}", parentCaseId, processName);
+                
+                try {
+                    // Obtener las tareas humanas del caso padre
+                    List<Map<String, String>> humanTasks = bonitaApiSvc.getTasksByCaseId(parentCaseId);
+                    logger.info("    → Tareas humanas encontradas: {}", humanTasks.size());
+                    
+                    // Para cada tarea, el parentCaseId indica el subproceso
+                    for (Map<String, String> task : humanTasks) {
+                        String taskParentCaseId = task.get("parentCaseId");
+                        
+                        if (taskParentCaseId != null && !taskParentCaseId.equals(parentCaseId)) {
+                            // Este parentCaseId es el ID del subproceso
+                            logger.info("    → Subproceso encontrado via tarea: {}", taskParentCaseId);
+                            
+                            // Obtener variables del subproceso
+                            List<Map<String, Object>> variables = bonitaApiSvc.getVariablesByCaseId(taskParentCaseId);
+                            logger.info("       Variables en subproceso: {}", variables.size());
+                            
+                            // Buscar jsonPedidos
+                            for (Map<String, Object> variable : variables) {
+                                String varName = (String) variable.get("name");
+                                
+                                if ("jsonPedidos".equals(varName)) {
+                                    Object value = variable.get("value");
+                                    
+                                    logger.info("    ✓ jsonPedidos encontrado! Subproceso={}, valor presente={}", 
+                                        taskParentCaseId, value != null);
+                                    
+                                    Map<String, Object> pedidoInfo = new HashMap<>();
+                                    pedidoInfo.put("parentCaseId", parentCaseId);
+                                    pedidoInfo.put("subprocessCaseId", taskParentCaseId);
+                                    pedidoInfo.put("pedidos", value);
+                                    pedidoInfo.put("processName", processName);
+                                    result.add(pedidoInfo);
+                                    break; // Ya encontramos jsonPedidos en este subproceso
+                                }
+                            }
+                        }
+                    }
+                    
+                } catch (Exception e) {
+                    logger.warn("Error procesando caso padre {}: {}", parentCaseId, e.getMessage());
+                }
+            }
+            
+            logger.info("═══ Resultado: {} subprocesos con pedidos encontrados ═══", result.size());
+            return result;
+            
+        } catch (Exception e) {
+            logger.error("Error obteniendo todos los pedidos desde Bonita", e);
+            throw new BonitaException("Error obteniendo todos los pedidos desde Bonita", e);
+        }
     }
 }

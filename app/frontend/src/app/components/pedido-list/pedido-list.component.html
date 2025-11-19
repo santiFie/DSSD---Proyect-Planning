@@ -1,15 +1,15 @@
 <div class="pedido-list">
-  <h2>Pedidos del Cloud</h2>
+  <h2>Pedidos Disponibles desde Bonita</h2>
 
-  <div *ngIf="loading">Cargando pedidos...</div>
+  <div *ngIf="loading" class="loading">Cargando pedidos desde Bonita...</div>
   <div *ngIf="error" class="error">{{ error }}</div>
 
   <table *ngIf="!loading && pedidos?.length" class="pedido-table">
     <thead>
       <tr>
         <th>ID</th>
-        <th>ID de proyecto</th>
-        <th>ID etapa</th>
+        <th>Proyecto</th>
+        <th>Etapa</th>
         <th>Descripción</th>
         <th>Estado</th>
         <th>Acciones</th>
@@ -18,16 +18,34 @@
     <tbody>
       <tr *ngFor="let p of pedidos">
         <td>{{ p.id }}</td>
-        <td>{{ p.proyectoId || '-' }}</td>
-        <td>{{ p.etapaId || '-' }}</td>
-        <td>{{ p.descripcion || '-' }}</td>
-        <td>{{ p.estado || '-' }}</td>
+        <td>{{ p.proyectoId }}</td>
+        <td>{{ p.etapaId }}</td>
+        <td>{{ p.descripcion }}</td>
         <td>
-          <div (click)="brindarAyuda(p)" class="btn btn-secondary">Brindar ayuda</div>
+          <span class="badge" [ngClass]="{
+            'badge-abierto': p.estado === 'ABIERTO',
+            'badge-cerrado': p.estado === 'CERRADO',
+            'badge-pendiente': p.estado === 'PENDIENTE'
+          }">
+            {{ p.estado }}
+          </span>
+        </td>
+        <td>
+          <button 
+            *ngIf="p.estado === 'ABIERTO'" 
+            (click)="brindarAyuda(p)" 
+            class="btn btn-primary">
+            Brindar Ayuda
+          </button>
+          <span *ngIf="p.estado !== 'ABIERTO'" class="text-muted">
+            No disponible
+          </span>
         </td>
       </tr>
     </tbody>
   </table>
 
-  <div *ngIf="!loading && (!pedidos || pedidos.length === 0)">No hay pedidos.</div>
+  <div *ngIf="!loading && (!pedidos || pedidos.length === 0)" class="no-data">
+    No hay pedidos disponibles en este momento.
+  </div>
 </div>

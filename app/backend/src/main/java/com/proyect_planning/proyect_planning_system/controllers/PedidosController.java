@@ -1,5 +1,6 @@
 package com.proyect_planning.proyect_planning_system.controllers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaBusinessService;
 import com.proyect_planning.proyect_planning_system.services.cloud.CloudService;
 import com.proyect_planning.proyect_planning_system.services.cloud.dto.PedidoCloudDTO;
@@ -40,14 +43,41 @@ public class PedidosController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllPedidos() {
-        // Lógica para obtener todos los pedidos
-        List<PedidoCloudDTO> pedidos = null;
-        try{
-            pedidos = cloudService.getAllPedidos();
-                return ResponseEntity.ok().body(pedidos);
-        } catch(Exception e){
-            logger.error("Error al obtener los pedidos de cloud: {}", e.getMessage());
-            return ResponseEntity.status(500).body("Error al obtener los pedidos de cloud: " + e.getMessage());
+        try {
+            // Primero intentar obtener pedidos desde Bonita
+            logger.info("Tratando de obtener pedidos desde Bonita...");
+            List<Map<String, Object>> pedidosFromBonita = bonitaBusinessSvc.getAllPedidosFromBonita();
+            
+            if (pedidosFromBonita != null && !pedidosFromBonita.isEmpty()) {
+                logger.info("Subprocesos con pedidos obtenidos desde Bonita: {}", pedidosFromBonita.size());
+                
+                // Aplanar la lista de pedidos parseando el JSON
+                // porque esto devuelve una lista de subprocesos, cada uno con su JSON string de pedidos y otros datos
+                List<Map<String, Object>> allPedidos = new ArrayList<>();
+                ObjectMapper mapper = new ObjectMapper();
+                
+                for (Map<String, Object> pedidoInfo : pedidosFromBonita) {
+                    String pedidosJson = (String) pedidoInfo.get("pedidos");
+                    
+                    if (pedidosJson != null && !pedidosJson.isEmpty()) {
+                        List<Map<String, Object>> pedidosList = mapper.readValue(
+                            pedidosJson, 
+                            new TypeReference<List<Map<String, Object>>>() {}
+                        );
+                        allPedidos.addAll(pedidosList);
+                    }
+                }                
+                return ResponseEntity.ok().body(allPedidos);
+            }
+            
+            // Si no hay pedidos en Bonita, los obtiene desde Cloud
+            logger.warn("No se encontraron pedidos en Bonita, obteniendo desde Cloud...");
+            List<PedidoCloudDTO> pedidos = cloudService.getAllPedidos();
+            return ResponseEntity.ok().body(pedidos);
+            
+        } catch (Exception e) {
+            logger.error("Error al obtener los pedidos: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body("Error al obtener los pedidos: " + e.getMessage());
         }
     }
 
@@ -155,7 +185,7 @@ public class PedidosController {
                 
                 if (bonitaCaseId != null) {
                     // Llamar al proceso de Bonita para analizar el compromiso (rechazado)
-                    // Bonita se encargará de actualizar el estado en el Cloud
+                    // Bonita después se encargs de actualizar el estado en el Cloud
                     bonitaBusinessSvc.analizarCompromiso(
                         bonitaCaseId,
                         false, // aceptado = false
@@ -202,7 +232,6 @@ public class PedidosController {
     
         
         try {
-            // Preparar respuesta exitosa inicial
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "Compromiso procesado exitosamente");
@@ -210,11 +239,9 @@ public class PedidosController {
             response.put("ongColaboranteId", compromisoDto.getOngColaboranteId());
             
             try {
-                // Esto requiere una relación entre pedidos del cloud y proyectos locales
                 String bonitaCaseId = obtenerBonitaCaseIdDelPedido(compromisoDto.getPedido().getProyectoId());
                 
                 if (bonitaCaseId != null) {
-                    // Llamar al método corregido con bonitaCaseId
                     bonitaBusinessSvc.comprometerAyuda(
                         bonitaCaseId,  // ID del caso en Bonita
                         pedidoId.toString(), 
@@ -262,7 +289,6 @@ public class PedidosController {
         }
     }
 
-    // Método helper para obtener el bonitaCaseId
     private String obtenerBonitaCaseIdDelPedido(Long proyectId) {
         Proyect proyect = proyectService.getProyectById(proyectId);
         if (proyect != null) {

@@ -77,7 +77,6 @@
               </p>
               <div class="pedido-info">
                 <small *ngIf="pedido.etapaId"><strong>Etapa ID:</strong> {{ pedido.etapaId }}</small>
-                <small *ngIf="pedido.createdAt"><strong>Creado:</strong> {{ pedido.createdAt | date:'short' }}</small>
               </div>
               <div class="pedido-actions">
                 <a [routerLink]="['/pedidos', pedido.id, 'compromisos', project.id]" class="btn btn-small btn-primary">
