@@ -23,6 +23,8 @@ export interface Project {
   neighborhood?: string;
   ongOriginante?: number;
   stages: Stage[];
+  isActive?: boolean;
+  closeDescription: string;
 }
 
 export interface NewProjectDto {

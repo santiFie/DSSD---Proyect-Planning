@@ -19,7 +19,7 @@
   </div>
   
   <div class="projects-list" *ngIf="!loading && projects.length > 0">
-    <div class="project-card" *ngFor="let project of projects">
+    <div class="project-card" *ngFor="let project of projects" [ngClass]="{ 'project-inactive': project.isActive === false }">
       <div class="project-header">
         <h3>{{ project.name }}</h3>
         <div class="project-actions">
@@ -92,6 +92,31 @@
             </div>
           </div>
         </div>
+      </div>
+        <div class="finalizar-proyecto" *ngIf="project.isClosed && project.isActive">
+          <!-- Botón para mostrar/ocultar formulario -->
+          <button
+                  class="btn btn-success btn-small"
+                  (click)="project.showCloseForm = !project.showCloseForm"
+          >
+              {{ project.showCloseForm ? 'Cancelar' : 'Finalizar proyecto' }}
+          </button>
+          <!-- Formulario de cierre -->
+          <div *ngIf="project.showCloseForm" class="close-project-form">
+              <label>Descripción de cierre:</label>
+              <textarea
+                      [(ngModel)]="project.closeDescriptionInput"
+                      rows="3"
+                      placeholder="Escribe una descripción del cierre..."
+                      class="close-description-textarea"
+              ></textarea>
+              <button
+                      class="btn btn-primary btn-small"
+                      (click)="finalizeProject(project)"
+              >
+                  Confirmar cierre
+              </button>
+          </div>
       </div>
     </div>
   </div>

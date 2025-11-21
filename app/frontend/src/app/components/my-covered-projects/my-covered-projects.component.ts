@@ -5,17 +5,21 @@ import { ProjectService } from '../../services/project.service';
 import { PedidoService } from '../../services/pedido.service';
 import { Project } from '../../models/project.model';
 import { Pedido } from '../../models/pedido.model';
+import {FormsModule} from "@angular/forms";
 
 interface ProjectWithStages extends Project {
   pedidos?: Pedido[];
   showStages?: boolean;
   loadingStages?: boolean;
+  showCloseForm?: boolean;
+  closeDescriptionInput: string;
+  isClosed?: boolean;
 }
 
 @Component({
   selector: 'app-my-projects',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './my-covered-projects.component.html',
   styleUrls: ['./my-covered-projects.component.scss']
 })
@@ -38,12 +42,21 @@ export class MyCoveredProjectsComponent implements OnInit {
     
     this.projectService.getMyCoveredProjects().subscribe({
       next: (projects) => {
-        this.projects = projects.map(p => ({
-          ...p,
-          pedidos: [],
-          showStages: false,
-          loadingStages: false
-        }));
+        this.projects = projects.map(p => {
+          const allStagesExecuted = p.stages?.length
+              ? p.stages.every(s => s.executed === true)
+              : false;
+
+          return {
+            ...p,
+            pedidos: [],
+            showStages: false,
+            loadingStages: false,
+            showCloseForm: false,
+            closeDescriptionInput: '',
+            isClosed: allStagesExecuted
+          };
+        });
         this.loading = false;
       },
       error: (error) => {
@@ -108,4 +121,28 @@ export class MyCoveredProjectsComponent implements OnInit {
       }
     });
   }
+
+  finalizeProject(project: ProjectWithStages): void {
+    if (!project.id) return;
+
+    const desc = project.closeDescriptionInput?.trim();
+    if (!desc) {
+      alert("Por favor, ingresa una descripción para cerrar el proyecto.");
+      return;
+    }
+
+    console.log("Finalizando proyecto:", project.id, "con descripción:", desc);
+
+    this.projectService.finalizeProject(project.id, desc).subscribe({
+      next: () => {
+        alert("Proyecto finalizado con éxito");
+        this.loadMyCoveredProjects();
+      },
+      error: (err) => {
+        console.error("Error al finalizar proyecto:", err);
+        alert("Error al finalizar proyecto");
+      }
+    });
+  }
+
 }

@@ -54,4 +54,9 @@ export class ProjectService {
   executeStageByProjectId(projectId: number, stageId: number): Observable<Stage> {
     return this.http.put<Stage>(`${this.apiUrl}/my-projects/${projectId}/execute-stage/${stageId}`, {});
   }
+
+  finalizeProject(projectId: number, closeDescription: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/my-projects/${projectId}/close-project`, {}, { params: { closeDescription } });
+  }
+
 }
