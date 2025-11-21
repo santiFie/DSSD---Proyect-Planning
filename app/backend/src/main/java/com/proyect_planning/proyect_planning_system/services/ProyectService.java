@@ -194,6 +194,13 @@ public class ProyectService {
         return cantExecuted;
     }
 
+    public void closeProject(Proyect proyect, String closeDescription) {
+        Proyect p = proyectRepository.findById(proyect.getId()).orElseThrow(() -> new IllegalArgumentException("Project not found"));
+        p.setIsActive(false);
+        p.setCloseDescription(closeDescription);
+        proyectRepository.save(p);
+    }
+
     public void acceptCompromise(Long pedidoId) {
         Need need = needRepository.findById(pedidoId).orElse(null);
         if (need != null) {

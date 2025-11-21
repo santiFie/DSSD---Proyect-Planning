@@ -243,4 +243,54 @@ public class ProyectController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @PutMapping("my-projects/{id}/close-project")
+    public ResponseEntity<?> closeProject(@PathVariable Long id, @RequestParam String closeDescription) {
+        Proyect proyect = proyectService.getProyectById(id);
+        if (proyect == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            // Primero cerrar el proyecto localmente
+            proyectService.closeProject(proyect, closeDescription);
+
+            // Preparar respuesta exitosa inicial
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Proyecto cerrado exitosamente");
+
+            try {
+                // Luego notificar a Bonita
+                String bonitaCaseId = proyect.getBonitaCaseId();
+
+                if (bonitaCaseId != null) {
+                    // Llamar al proceso de Bonita para cerrar el proyecto
+                    bonitaBusinessSvc.finalizarProyecto(bonitaCaseId);
+
+                    response.put("message", "Proyecto cerrado correctamente y proceso Bonita avanzado exitosamente");
+                    response.put("bonita_case_id", bonitaCaseId);
+                    response.put("bonita_enabled", true);
+                } else {
+                    response.put("message", "Proyecto cerrado (no se encontró caso Bonita asociado)");
+                    response.put("bonita_enabled", false);
+                }
+            } catch (Exception bonitaError) {
+                logger.error("Error en Bonita al cerrar proyecto: {}", bonitaError.getMessage(), bonitaError);
+
+                // Si Bonita falla, seguir con el proceso pero indicarlo
+                response.put("message", "Proyecto cerrado (Bonita no disponible)");
+                response.put("bonita_enabled", false);
+                response.put("bonita_error", bonitaError.getMessage());
+            }
+
+            return ResponseEntity.ok().body(response);
+        } catch (IllegalArgumentException iae) {
+            logger.warn("Invalid input data: {}", iae.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            logger.error("Error closing project ", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

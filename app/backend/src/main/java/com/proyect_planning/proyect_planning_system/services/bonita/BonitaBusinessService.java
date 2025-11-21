@@ -155,6 +155,14 @@ public class BonitaBusinessService {
         }
     }
 
+    /**
+     * Ejecuta la etapa del proyecto en Bonita, registrando la cantidad de etapas
+     * ejecutadas
+     *
+     * @param bonitaCaseId ID del caso en Bonita (asociado al proyecto)
+     * @param cantidad     Cantidad de etapas ejecutadas
+     * @throws BonitaException Ante un error en la comunicación con Bonita
+     */
     public void ejecutarEtapa(String bonitaCaseId, int cantidad) throws BonitaException {
         // Obtener el ID del proceso "Ejecutar Tarea Comprometida"
         List<Map<String, String>> tareas = this.bonitaApiSvc.getTasksByCaseId(bonitaCaseId);
@@ -172,6 +180,29 @@ public class BonitaBusinessService {
             taskData.put("cantEtapasEjecutadas", cantEtapasEjecutadas);
             // Ejecutar la tarea
             bonitaApiSvc.executeTask(tareas.get(0).get("id"), taskData);
+        } else {
+            logger.error("No se encontraron tareas humanas para el caso ID: {}", bonitaCaseId);
+        }
+    }
+
+    /**
+     * Finaliza el proyecto en Bonita, ejecutando la tarea "Terminar Proyecto"
+     *
+     * @param bonitaCaseId ID del caso en Bonita (asociado al proyecto)
+     * @throws BonitaException Ante un error en la comunicación con Bonita
+     */
+    public void finalizarProyecto(String bonitaCaseId) throws BonitaException {
+        // Obtener el ID del proceso "Terminar proyecto"
+        List<Map<String, String>> tareas = this.bonitaApiSvc.getTasksByCaseId(bonitaCaseId);
+        if (tareas != null && !tareas.isEmpty()) {
+            // Ejecutar la tarea humana, que debería ser "Terminar proyecto"
+            if (Boolean.FALSE.equals(tareas.get(0).get("name").contains("Terminar proyecto"))) {
+                logger.info("Tareas encontradas: {}", tareas);
+                logger.warn("La tarea encontrada no es 'Terminar proyecto': {}", tareas.get(0));
+                throw new BonitaException("La tarea encontrada no es 'Terminar proyecto'. Nombre tarea: " + tareas.get(0).get("name"));
+            }
+            // Ejecutar la tarea
+            bonitaApiSvc.executeTask(tareas.get(0).get("id"), null);
         } else {
             logger.error("No se encontraron tareas humanas para el caso ID: {}", bonitaCaseId);
         }
