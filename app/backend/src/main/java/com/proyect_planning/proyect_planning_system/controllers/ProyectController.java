@@ -149,7 +149,7 @@ public class ProyectController {
         List<ProyectDto> projectDtos = projects.stream()
                 .map(ProyectDto::fromEntity)
                 .toList();
-        logger.error("Proyectos cubiertos: {}", projectDtos.toString());
+        logger.debug("Proyectos cubiertos: {}", projectDtos.toString());
         return ResponseEntity.ok(projectDtos);
     }
 
@@ -165,7 +165,7 @@ public class ProyectController {
         List<ProyectDto> projectDtos = projects.stream()
                 .map(ProyectDto::fromEntity)
                 .toList();
-        logger.error("Proyectos: {}", projectDtos.toString());
+        logger.debug("Proyectos: {}", projectDtos.toString());
         return ResponseEntity.ok(projectDtos);
     }
 
@@ -183,9 +183,10 @@ public class ProyectController {
         }
         List<StageDto> stageDtos = project.getStages().stream()
                 .map(StageDto::fromEntity)
+                .sorted(StageDto.idComparator)
                 .toList();
-        logger.error("Stages del proyecto {}: {}", id, stageDtos.toString());
-        logger.error(stageDtos.toString());
+        logger.debug("Stages del proyecto {}: {}", id, stageDtos.toString());
+        logger.debug(stageDtos.toString());
         return ResponseEntity.ok(stageDtos);
     }
 

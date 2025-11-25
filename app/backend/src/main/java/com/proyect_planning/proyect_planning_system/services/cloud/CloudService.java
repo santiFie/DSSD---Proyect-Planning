@@ -62,14 +62,14 @@ public class CloudService {
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null
                     && response.getBody().getToken() != null) {
                 jwtToken = response.getBody().getToken().getToken();
-                logger.info("Autenticación exitosa en cloud");
+                logger.info("Autenticacion exitosa en cloud");
             } else {
                 logger.error("Error al loguearse en cloud. HttpStatus: {}, Response: {}", response.getStatusCode(),
                         response.getBody());
                 throw new CloudException("Error al loguearse en cloud (ver logs)");
             }
         } catch (Exception e) {
-            logger.error("Excepción al intentar autenticar en cloud: URL={}, Error={}",
+            logger.error("Excepcion al intentar autenticar en cloud: URL={}, Error={}",
                     cloudBaseUrl + "/api/v1/auth/login", e.getMessage(), e);
             throw new CloudException("No se pudo conectar al servicio cloud: " + e.getMessage(), e);
         }

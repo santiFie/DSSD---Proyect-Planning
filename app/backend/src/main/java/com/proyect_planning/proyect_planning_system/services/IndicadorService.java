@@ -60,14 +60,14 @@ public class IndicadorService {
     }
 
     /**
-     * Obtiene las etapas con necesidades no cubiertas y ONG colaborante asociada
+     * Obtiene las etapas con necesidades y ONG colaborante asociada
      * 
      * @return Lista de IndicadorEtapaPedidoDTO
      */
     public List<IndicadorEtapaPedidoDTO> getStagesAndNeeds() {
         return proyectSvc.getAllProjects().stream()
                 .flatMap(proj -> proj.getStages().stream()
-                        .filter(stage -> !stage.getCovered())
+                        .filter(stage -> stage.getNeeds() != null)
                         .map(stage -> {
                             IndicadorEtapaPedidoDTO dto = new IndicadorEtapaPedidoDTO();
                             dto.setIdProject(proj.getId());

@@ -1,5 +1,7 @@
 package com.proyect_planning.proyect_planning_system.dtos;
 
+import java.util.Comparator;
+
 import com.proyect_planning.proyect_planning_system.entities.Need;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -39,4 +41,10 @@ public class StageDto {
         dto.setCategory(stage.getCategory());
         return dto;
     }
+
+    /**
+     * Comparador por id, para ordenar de forma ascendente
+     */
+    public static final Comparator<StageDto> idComparator = (StageDto ac1,
+            StageDto ac2) -> ac1.getId().compareTo(ac2.getId());
 }

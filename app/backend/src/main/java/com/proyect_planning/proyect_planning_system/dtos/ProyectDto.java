@@ -30,6 +30,7 @@ public class ProyectDto {
         List<StageDto> stageDtos = proyect.getStages() != null ? 
             proyect.getStages().stream()
                     .map(StageDto::fromEntity)
+                    .sorted(StageDto.idComparator)
                     .collect(Collectors.toList()) : 
             null;
             
