@@ -135,7 +135,7 @@ export class ObservacionListComponent implements OnInit {
     }
 
     // Establecer automáticamente la ONG del proyecto seleccionado
-    const proyectoSeleccionado = this.proyectos.find(p => p.id === this.newObservacion.proyectoId);
+    const proyectoSeleccionado = this.proyectos.find(p => p.id == this.newObservacion.proyectoId);
     if (proyectoSeleccionado && proyectoSeleccionado.ongOriginante) {
       this.newObservacion.ongId = proyectoSeleccionado.ongOriginante;
     } else {
@@ -193,16 +193,16 @@ export class ObservacionListComponent implements OnInit {
   }
 
   getOngNameForSelectedProject(): string {
-    if (this.newObservacion.proyectoId === 0) {
+    if (this.newObservacion.proyectoId == 0) {
       return '';
     }
     
-    const proyecto = this.proyectos.find(p => p.id === this.newObservacion.proyectoId);
+    const proyecto = this.proyectos.find(p => p.id == this.newObservacion.proyectoId);
     if (!proyecto || !proyecto.ongOriginante) {
       return 'ONG del proyecto';
     }
     
-    const ong = this.ongs.find(o => o.id === proyecto.ongOriginante);
+    const ong = this.ongs.find(o => o.id == proyecto.ongOriginante);
     return ong?.name || 'ONG del proyecto';
   }
 
