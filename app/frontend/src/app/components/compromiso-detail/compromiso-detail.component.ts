@@ -25,7 +25,7 @@ export class CompromisoDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private pedidoService: PedidoService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -73,8 +73,7 @@ export class CompromisoDetailComponent implements OnInit {
     this.pedidoService.aceptarCompromiso(this.pedidoId, compromiso.id, this.proyectoId).subscribe({
       next: () => {
         this.successMessage = 'Compromiso aceptado exitosamente';
-        // Recargar la lista desde el servidor
-        this.loadCompromisos();
+        compromiso.estado = 'ACEPTADO';
         setTimeout(() => this.successMessage = null, 5000);
       },
       error: (error) => {
@@ -93,8 +92,7 @@ export class CompromisoDetailComponent implements OnInit {
     this.pedidoService.rechazarCompromiso(this.pedidoId, compromiso.id, this.proyectoId).subscribe({
       next: () => {
         this.successMessage = 'Compromiso rechazado exitosamente';
-        // Recargar la lista desde el servidor
-        this.loadCompromisos();
+        compromiso.estado = 'RECHAZADO';
         setTimeout(() => this.successMessage = null, 5000);
       },
       error: (error) => {

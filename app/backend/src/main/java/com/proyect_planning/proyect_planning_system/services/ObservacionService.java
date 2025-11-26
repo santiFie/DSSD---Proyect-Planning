@@ -70,7 +70,6 @@ public class ObservacionService {
             observacion = observacionRepository.save(observacion);
         } catch (Exception e) {
             logger.error("Error al registrar observación en Bonita: {}", e.getMessage(), e);
-            // Continuamos aunque falle Bonita
         }
 
         // Enviar email a los usuarios de la organización del proyecto
@@ -78,15 +77,12 @@ public class ObservacionService {
             enviarEmailNuevaObservacion(observacion);
         } catch (Exception e) {
             logger.error("Error al enviar email de notificación: {}", e.getMessage(), e);
-            // Continuamos aunque falle el envío de email
         }
 
         return toObservacionResponse(observacion);
     }
 
-    /**
-     * Obtiene todas las observaciones de un proyecto
-     */
+
     public List<ObservacionResponse> getObservacionesByProyecto(Long proyectoId) {
         List<Observacion> observaciones = observacionRepository.findByProyectoId(proyectoId);
         return observaciones.stream()
@@ -94,9 +90,7 @@ public class ObservacionService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene todas las observaciones de una ONG
-     */
+
     public List<ObservacionResponse> getObservacionesByOng(Long ongId) {
         List<Observacion> observaciones = observacionRepository.findByOngId(ongId);
         return observaciones.stream()
@@ -104,18 +98,14 @@ public class ObservacionService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Obtiene una observación por ID
-     */
+
     public ObservacionResponse getObservacionById(Long id) {
         Observacion observacion = observacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Observación no encontrada"));
         return toObservacionResponse(observacion);
     }
 
-    /**
-     * Crea una corrección para una observación
-     */
+
     @Transactional
     public CorreccionResponse createCorreccion(CreateCorreccionRequest request, Long usuarioId) {
         Observacion observacion = observacionRepository.findById(request.getObservacionId())
@@ -194,17 +184,17 @@ public class ObservacionService {
         
         Correccion comentarioRechazo = Correccion.builder()
                 .observacion(observacion)
-                .detalle("❌ CORRECCIÓN RECHAZADA - Motivo: " + motivoRechazo)
+                .detalle("CORRECCIÓN RECHAZADA - Motivo: " + motivoRechazo)
                 .usuario(sistema)
                 .build();
         
         correccionRepository.save(comentarioRechazo);
 
-        // Establecer estado RECHAZADA (no PENDIENTE)
+        // Establecer estado RECHAZADA
         observacion.setEstado(EstadoObservacion.RECHAZADA);
         observacion = observacionRepository.save(observacion);
 
-        // Notificar a Bonita sobre el rechazo (estado RECHAZADA != RESUELTA)
+        // Notificar a Bonita sobre el rechazo (estado RECHAZADA)
         try {
             bonitaBusinessService.actualizarEstadoObservacionEnBonita(observacion);
         } catch (Exception e) {
@@ -237,8 +227,6 @@ public class ObservacionService {
             }
         }
     }
-
-    // ========== Métodos de conversión ==========
 
     /**
      * Envía un email de notificación a los usuarios de la organización del proyecto
