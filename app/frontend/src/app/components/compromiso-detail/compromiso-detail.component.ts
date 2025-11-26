@@ -80,6 +80,10 @@ export class CompromisoDetailComponent implements OnInit {
         console.error('Error accepting compromiso:', error);
         this.error = 'Error al aceptar el compromiso: ' + (error.error?.message || error.message);
         setTimeout(() => this.error = null, 5000);
+      },
+      complete: () => {
+        this.loadPedido();
+        this.loadCompromisos();
       }
     });
   }
@@ -99,6 +103,10 @@ export class CompromisoDetailComponent implements OnInit {
         console.error('Error rejecting compromiso:', error);
         this.error = 'Error al rechazar el compromiso: ' + (error.error?.message || error.message);
         setTimeout(() => this.error = null, 5000);
+      },
+      complete: () => {
+        this.loadPedido();
+        this.loadCompromisos();
       }
     });
   }

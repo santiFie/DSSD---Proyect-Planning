@@ -3,7 +3,6 @@ package com.proyect_planning.proyect_planning_system.services;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.proyect_planning.proyect_planning_system.controllers.PedidosController;
 import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
 import com.proyect_planning.proyect_planning_system.dtos.StageDto;
 import com.proyect_planning.proyect_planning_system.entities.Need;
@@ -13,7 +12,6 @@ import com.proyect_planning.proyect_planning_system.repositories.StageRepository
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import com.proyect_planning.proyect_planning_system.dtos.NewProjectDto;
