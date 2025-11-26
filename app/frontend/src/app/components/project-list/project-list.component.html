@@ -1,4 +1,4 @@
-<div class="project-list">
+<div class="project-list container mt-4">
     <h2>Lista de Proyectos</h2>
 
     <div class="action-buttons">
@@ -7,6 +7,9 @@
         </button>
         <button [routerLink]="['/my-projects']" class="btn btn-accent">
             Mis proyectos
+        </button>
+        <button [routerLink]="['/my-projects/covered']" class="btn btn-accent">
+            Mis proyectos cubiertos
         </button>
     </div>
 
@@ -27,14 +30,14 @@
     </div>
     
     <div class="projects-grid" *ngIf="!loading && projects.length > 0">
-    <div class="card project-card" *ngFor="let project of projects">
+    <div class="card project-card" *ngFor="let project of projects" [ngClass]="{ 'project-inactive': project.isActive === false }">
         <h3>{{ project.name }}</h3>
         <p class="project-description">{{ project.description }}</p>
         <div class="project-dates">
         <small><strong>Inicio:</strong> {{ project.startDate }}</small>
         <small><strong>Fin:</strong> {{ project.endDate }}</small>
         </div>
-        <div class="project-actions">
+        <div class="project-actions" *ngIf="project.isActive === true">
         <a [routerLink]="['/projects/edit', project.id]" class="btn btn-secondary">Editar</a>
         <button (click)="deleteProject(project.id!)" class="btn btn-danger">Eliminar</button>
         <button 

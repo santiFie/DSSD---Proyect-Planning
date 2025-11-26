@@ -21,4 +21,10 @@ export class OngService {
   createOng(request: CreateOngRequest): Observable<Ong> {
     return this.http.post<Ong>(`${this.apiUrl}/admin/ongs`, request);
   }
+
+  findById(id: number): Observable<Ong | null> {
+    return this.http.get<Ong>(`${this.apiUrl}/ongs/${id}`).pipe(
+      map(ong => ong || null)
+    );
+  }
 }

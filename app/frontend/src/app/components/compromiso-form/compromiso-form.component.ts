@@ -2,10 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Pedido } from '../../models/pedido.model';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { NewCompromisoDto } from '../../models/compromiso.model';
 import { PedidoService } from '../../services/pedido.service';
 import { finalize } from 'rxjs';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-compromiso-form',
@@ -38,15 +39,16 @@ export class CompromisoFormComponent implements OnInit {
 
   constructor(
     private pedidoService: PedidoService,
-    private route: ActivatedRoute,
     private router: Router,
-    private readonly location: Location
+    private readonly location: Location,
+    private authSvc: AuthService
   ) { }
 
   ngOnInit(): void {
     const state = this.location.getState() as { pedido: Pedido };
     this.pedido = state.pedido;
     this.compromiso.pedido = this.pedido;
+    this.compromiso.ongColaboranteId = this.authSvc.getCurrentUser()?.ongId || 0;
   }
 
   onSubmit(): void {

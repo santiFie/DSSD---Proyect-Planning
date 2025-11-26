@@ -1,5 +1,7 @@
 package com.proyect_planning.proyect_planning_system.dtos;
 
+import java.util.Comparator;
+
 import com.proyect_planning.proyect_planning_system.entities.Need;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +23,11 @@ public class StageDto {
     private String startDate;
     
     private String endDate;
-    
+
+    private Boolean executed = false;
+
+    private String category;
+
     // Constructor que convierte de entidad a DTO
     public static StageDto fromEntity(com.proyect_planning.proyect_planning_system.entities.Stage stage) {
         StageDto dto = new StageDto();
@@ -31,6 +37,14 @@ public class StageDto {
         dto.setCovered(stage.getCovered());
         dto.setStartDate(stage.getStartDate());
         dto.setEndDate(stage.getEndDate());
+        dto.setExecuted(stage.getExecuted());
+        dto.setCategory(stage.getCategory());
         return dto;
     }
+
+    /**
+     * Comparador por id, para ordenar de forma ascendente
+     */
+    public static final Comparator<StageDto> idComparator = (StageDto ac1,
+            StageDto ac2) -> ac1.getId().compareTo(ac2.getId());
 }

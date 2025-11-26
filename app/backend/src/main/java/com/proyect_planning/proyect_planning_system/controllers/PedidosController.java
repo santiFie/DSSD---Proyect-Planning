@@ -192,6 +192,10 @@ public class PedidosController {
                         true, // aceptado = true
                         compromisoId
                     );
+
+                    // Aceptar en el back
+                    logger.error("Acptar compromiso en el back");
+                    proyectService.acceptCompromise(pedidoId);
                     
                     response.put("message", "Compromiso aceptado y proceso Bonita avanzado exitosamente");
                     response.put("bonita_case_id", bonitaCaseId);

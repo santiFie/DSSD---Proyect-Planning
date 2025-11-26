@@ -48,16 +48,70 @@ public class DataInitializer implements CommandLineRunner {
             logger.info("Usuario admin creado - Username: admin, Password: admin123, Email: admin@sistema.com");
             
             // Crear un usuario regular de ejemplo
+            Ong ongGeneral = Ong.builder()
+                    .name("ONG General")
+                    .originCountry("Argentina")
+                    .build();
+            ongGeneral = ongRepository.save(ongGeneral);
             User regularUser = User.builder()
-                    .username("user")
+                    .username("ongeneral")
                     .password(passwordEncoder.encode("user123"))
                     .email("user@sistema.com")
                     .role(Role.USER)
-                    .ong(defaultOng)
+                    .ong(ongGeneral)
                     .build();
             userRepository.save(regularUser);
             logger.info("Usuario regular creado - Username: user, Password: user123, Email: user@sistema.com");
-            
+            logger.info("Usuario regular creado - Username: ongeneral, Password: user123");
+
+            // Crear un usuario regular de ejemplo
+            Ong ongMaterial = Ong.builder()
+                    .name("ONG Material")
+                    .originCountry("Argentina")
+                    .build();
+            ongMaterial = ongRepository.save(ongMaterial);
+            User usuarioMaterial = User.builder()
+                    .username("ongmaterial")
+                    .password(passwordEncoder.encode("user123"))
+                    .email("ongMaterial@sistema.com")
+                    .role(Role.USER)
+                    .ong(ongMaterial)
+                    .build();
+            userRepository.save(usuarioMaterial);
+            logger.info("Usuario regular creado - Username: ongmaterial, Password: user123");
+
+            // Crear un usuario regular de ejemplo
+            Ong ongManoObra = Ong.builder()
+                    .name("ONG Mano de Obra")
+                    .originCountry("Argentina")
+                    .build();
+            ongManoObra = ongRepository.save(ongManoObra);
+            User usuarioManoObra = User.builder()
+                    .username("ongmanoobra")
+                    .password(passwordEncoder.encode("user123"))
+                    .email("ongManoObra@sistema.com")
+                    .role(Role.USER)
+                    .ong(ongManoObra)
+                    .build();
+            userRepository.save(usuarioManoObra);
+            logger.info("Usuario regular creado - Username: ongmanoobra, Password: user123");
+
+            // Crear un usuario regular de ejemplo
+            Ong ongDinero = Ong.builder()
+                    .name("ONG Dinero")
+                    .originCountry("Argentina")
+                    .build();
+            ongDinero = ongRepository.save(ongDinero);
+            User usuarioDinero = User.builder()
+                    .username("ongdinero")
+                    .password(passwordEncoder.encode("user123"))
+                    .email("userDinero@sistema.com")
+                    .role(Role.USER)
+                    .ong(ongDinero)
+                    .build();
+            userRepository.save(usuarioDinero);
+            logger.info("Usuario regular creado - Username: ongdinero, Password: user123");
+
             // Crear un usuario directivo de ejemplo
             User directivoUser = User.builder()
                     .username("directivo")

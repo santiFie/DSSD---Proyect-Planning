@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proyect_planning.proyect_planning_system.config.BonitaConfig;
+import com.proyect_planning.proyect_planning_system.services.bonita.dto.ArchivedCaseDTO;
 import com.proyect_planning.proyect_planning_system.services.bonita.exception.BonitaException;
 
 import reactor.core.publisher.Mono;
@@ -153,10 +154,10 @@ public class BonitaApiService {
         try {
             HttpHeaders headers = authService.createAuthenticatedHeaders();
             HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-            
+
             List<Map<String, Object>> allInstances = new ArrayList<>();
             int page = 0;
-            int count = 100; 
+            int count = 100;
             boolean hasMore = true;
 
             while (hasMore) {
@@ -170,7 +171,7 @@ public class BonitaApiService {
 
                 JsonNode jsonNode = objectMapper.readTree(response.getBody());
                 List<Map<String, Object>> pageResults = objectMapper.convertValue(
-                        jsonNode, 
+                        jsonNode,
                         new TypeReference<List<Map<String, Object>>>() {}
                 );
 
@@ -249,10 +250,11 @@ public class BonitaApiService {
 
     /**
      * Asigna una tarea a un usuario específico
+     *
      * @deprecated Usar executeTask en su lugar, porque asigna al usuario logueado
      * @throws BonitaException Ante un error en la comunicación con Bonita
      */
-    @Deprecated (since = "2025-10-09", forRemoval = true)
+    @Deprecated(since = "2025-10-09", forRemoval = true)
     public String assignUserTask(String taskId, String userId) throws BonitaException {
         try {
             HttpHeaders headers = authService.createAuthenticatedHeaders();
@@ -283,7 +285,7 @@ public class BonitaApiService {
      *
      * @throws BonitaException Ante un error en la comunicación con Bonita
      */
-    @Deprecated (since = "2025-10-28", forRemoval = true)
+    @Deprecated(since = "2025-10-28", forRemoval = true)
     public List<Map<String, String>> getTasksByCaseIdOld(String caseId) throws BonitaException {
         try {
             HttpHeaders headers = authService.createAuthenticatedHeaders();
@@ -291,17 +293,17 @@ public class BonitaApiService {
 
             // Intentar diferentes formatos de URL
             String[] urlFormats = {
-                bonitaConfig.getApiUrl() + "/bpm/humanTask?f=caseId%3D" + caseId,
-                bonitaConfig.getApiUrl() + "/bpm/humanTask?f=caseId=" + caseId,
-                bonitaConfig.getApiUrl() + "/bpm/humanTask?f=rootCaseId=" + caseId,
-                bonitaConfig.getApiUrl() + "/bpm/humanTask?f=parentCaseId=" + caseId,
-                bonitaConfig.getApiUrl() + "/bpm/case/" + caseId + "/humanTask"
+                    bonitaConfig.getApiUrl() + "/bpm/humanTask?f=caseId%3D" + caseId,
+                    bonitaConfig.getApiUrl() + "/bpm/humanTask?f=caseId=" + caseId,
+                    bonitaConfig.getApiUrl() + "/bpm/humanTask?f=rootCaseId=" + caseId,
+                    bonitaConfig.getApiUrl() + "/bpm/humanTask?f=parentCaseId=" + caseId,
+                    bonitaConfig.getApiUrl() + "/bpm/case/" + caseId + "/humanTask"
             };
 
             for (String url : urlFormats) {
                 try {
                     logger.info("Probando URL: {}", url);
-                    
+
                     ResponseEntity<String> response = restTemplate.exchange(
                             url,
                             HttpMethod.GET,
@@ -311,13 +313,15 @@ public class BonitaApiService {
                     logger.info("Respuesta exitosa: {}", response.getBody());
 
                     JsonNode jsonNode = objectMapper.readTree(response.getBody());
-                    List<Map<String, String>> tasks = objectMapper.convertValue(jsonNode, new TypeReference<List<Map<String, String>>>() {});
-                    
+                    List<Map<String, String>> tasks = objectMapper.convertValue(jsonNode,
+                            new TypeReference<List<Map<String, String>>>() {
+                            });
+
                     if (!tasks.isEmpty()) {
                         logger.info("Encontradas {} tareas con URL: {}", tasks.size(), url);
                         return tasks;
                     }
-                    
+
                 } catch (Exception e) {
                     logger.warn("Falló URL {}: {}", url, e.getMessage());
                     continue;
@@ -333,33 +337,37 @@ public class BonitaApiService {
         }
     }
 
-
     // /**
-    //  * Obtiene las tareas humanas para un caso específico
-    //  *
-    //  * @throws BonitaException Ante un error en la comunicación con Bonita
-    //  */
-    // public List<Map<String, String>> getTasksByCaseId(String caseId) throws BonitaException {
-    //     try {
-    //         HttpHeaders headers = authService.createAuthenticatedHeaders();
-    //         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+    // * Obtiene las tareas humanas para un caso específico
+    // *
+    // * @throws BonitaException Ante un error en la comunicación con Bonita
+    // */
+    // public List<Map<String, String>> getTasksByCaseId(String caseId) throws
+    // BonitaException {
+    // try {
+    // HttpHeaders headers = authService.createAuthenticatedHeaders();
+    // HttpEntity<String> requestEntity = new HttpEntity<>(headers);
 
-    //         String url = bonitaConfig.getApiUrl() + "/bpm/humanTask?f=caseId=" + caseId /* + "&f=state=ready" */;
+    // String url = bonitaConfig.getApiUrl() + "/bpm/humanTask?f=caseId=" + caseId
+    // /* + "&f=state=ready" */;
 
-    //         ResponseEntity<String> response = restTemplate.exchange(
-    //                 url,
-    //                 HttpMethod.GET,
-    //                 requestEntity,
-    //                 String.class);
+    // ResponseEntity<String> response = restTemplate.exchange(
+    // url,
+    // HttpMethod.GET,
+    // requestEntity,
+    // String.class);
 
-    //         JsonNode jsonNode = objectMapper.readTree(response.getBody());
-    //         return objectMapper.convertValue(jsonNode, new TypeReference<List<Map<String, String>>>() {
-    //         });
+    // JsonNode jsonNode = objectMapper.readTree(response.getBody());
+    // return objectMapper.convertValue(jsonNode, new TypeReference<List<Map<String,
+    // String>>>() {
+    // });
 
-    //     } catch (Exception e) {
-    //         logger.error("Error obteniendo tareas en estado listo. caseId: {}", caseId, e);
-    //         throw new BonitaException("Error obteniendo tareas en estado listo. caseId: " + caseId, e);
-    //     }
+    // } catch (Exception e) {
+    // logger.error("Error obteniendo tareas en estado listo. caseId: {}", caseId,
+    // e);
+    // throw new BonitaException("Error obteniendo tareas en estado listo. caseId: "
+    // + caseId, e);
+    // }
     // }
 
     /**
@@ -386,10 +394,10 @@ public class BonitaApiService {
             throw new BonitaException("Error obteniendo usuarios de Bonita", e);
         }
     }
-    
 
     /**
      * Obtiene las tareas humanas para un caso específico
+     *
      * @throws BonitaException Ante un error en la comunicación con Bonita
      */
     public List<Map<String, String>> getTasksByCaseId(String caseId) throws BonitaException {
@@ -403,7 +411,8 @@ public class BonitaApiService {
                 .uri("/bpm/humanTask?f=caseId=" + caseId);
         try {
             return requestBusq.retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<List<Map<String, String>>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<List<Map<String, String>>>() {
+                    })
                     .flatMap(list -> {
                         if (list == null || list.isEmpty()) {
                             return Mono.error(new IllegalStateException("Lista vacía, reintentando..."));
@@ -412,10 +421,13 @@ public class BonitaApiService {
                         }
                     })
                     .retryWhen(Retry.backoff(3, Duration.ofMillis(500)).jitter(0.5)
-                        .filter(throwable -> throwable instanceof IllegalStateException)
-                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> {
-                            throw (WebClientException) retrySignal.failure();
-                        }))
+                            .filter(throwable -> throwable instanceof IllegalStateException)
+                            .doBeforeRetry(retrySignal ->
+                                    logger.warn("Reintentando obtener tareas (intento {}): {}",
+                                            retrySignal.totalRetriesInARow() + 1, retrySignal.failure().getMessage()))
+                            .onRetryExhaustedThrow((spec, signal) ->
+                                    new BonitaException("Falló la obtención de tareas después de varios intentos", signal.failure()))
+                    )
                     .block();
         } catch (Exception e) {
             logger.error("Error obteniendo tareas por caseId: {}", caseId, e);
@@ -424,8 +436,32 @@ public class BonitaApiService {
     }
 
     /**
+     * Obtiene los casos archivados en Bonita por el ID de caso
+     *
+     * @throws BonitaException
+     */
+    public List<ArchivedCaseDTO> getArchivedCase(String caseId) throws BonitaException {
+        try {
+            HttpHeaders headers = authService.createAuthenticatedHeaders();
+            HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+            String url = bonitaConfig.getApiUrl() + "/bpm/archivedCase?p=0&c=1000&f=sourceObjectId=" + caseId;
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    requestEntity,
+                    String.class);
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            return objectMapper.convertValue(jsonNode, new TypeReference<List<ArchivedCaseDTO>>() {
+            });
+
+        } catch (Exception e) {
+            logger.error("Error obteniendo casos archivados de Bonita", e);
+            throw new BonitaException("Error obteniendo casos archivados de Bonita", e);
+        }
+    }
+    /**
      * Obtiene las variables de un caso específico (incluye subprocesos)
-     * 
+     *
      * @param caseId ID del caso
      * @return Lista de variables del caso
      * @throws BonitaException si hay un error en la comunicación con Bonita
@@ -456,7 +492,7 @@ public class BonitaApiService {
     /**
      * Obtiene el valor de una variable específica de un caso
      * Busca en todas las variables del caso y retorna el valor de la primera coincidencia
-     * 
+     *
      * @param caseId ID del caso
      * @param variableName Nombre de la variable a buscar
      * @return Valor de la variable o null si no se encuentra
@@ -464,13 +500,13 @@ public class BonitaApiService {
      */
     public Object getVariableValueByCaseId(String caseId, String variableName) throws BonitaException {
         List<Map<String, Object>> variables = getVariablesByCaseId(caseId);
-        
+
         for (Map<String, Object> variable : variables) {
             if (variableName.equals(variable.get("name"))) {
                 return variable.get("value");
             }
         }
-        
+
         logger.warn("Variable '{}' no encontrada en el caso {}", variableName, caseId);
         return null;
     }
@@ -478,17 +514,17 @@ public class BonitaApiService {
     /**
      * Obtiene los Business Data de un caso por su ID
      * Filtra solo las variables de tipo BusinessData
-     * 
+     *
      * @param caseId ID del caso
      * @return Lista de Business Data del caso
      * @throws BonitaException si hay un error en la comunicación con Bonita
      */
     public List<Map<String, Object>> getBusinessDataByCaseId(String caseId) throws BonitaException {
         List<Map<String, Object>> allVariables = getVariablesByCaseId(caseId);
-        
+
         // Filtrar solo las variables de tipo BusinessData
         return allVariables.stream()
-                .filter(var -> "java.lang.String".equals(var.get("type")) || 
+                .filter(var -> "java.lang.String".equals(var.get("type")) ||
                               var.get("type") != null && var.get("type").toString().contains("."))
                 .toList();
     }
@@ -496,7 +532,7 @@ public class BonitaApiService {
     /**
      * Obtiene los subprocesos (subcases) de un caso padre
      * Usa el filtro callerId que corresponde a los subprocesos iniciados por Call Activities
-     * 
+     *
      * @param parentCaseId ID del caso padre
      * @return Lista de subcasos (subprocesos)
      * @throws BonitaException si hay un error en la comunicación con Bonita
@@ -519,11 +555,11 @@ public class BonitaApiService {
                     String.class);
 
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
-            List<Map<String, Object>> subprocesses = objectMapper.convertValue(jsonNode, 
+            List<Map<String, Object>> subprocesses = objectMapper.convertValue(jsonNode,
                 new TypeReference<List<Map<String, Object>>>() {});
-            
+
             logger.info("Subprocesos encontrados para caso padre {}: {}", parentCaseId, subprocesses.size());
-            
+
             return subprocesses;
 
         } catch (Exception e) {

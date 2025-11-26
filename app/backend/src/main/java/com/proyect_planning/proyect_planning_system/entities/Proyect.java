@@ -45,6 +45,13 @@ public class Proyect {
     @Column(nullable = false)
     private Long ongOriginante;
 
+    @Column
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @Column(nullable = true, length = 1000)
+    private String closeDescription;
+
     public void addStage(Stage stage) {
         stages.add(stage);
         stage.setProyect(this);
