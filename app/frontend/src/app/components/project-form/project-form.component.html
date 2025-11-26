@@ -112,6 +112,25 @@
                         </div>
 
                     </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label [for]="'stageCategory' + i">Categoría *</label>
+                            <select
+                                [id]="'stageCategory' + i"
+                                [name]="'stageCategory' + i"
+                                [(ngModel)]="stage.category"
+                                required
+                                class="form-control"
+                                placeholder="Categoría de la etapa"
+                            >
+                                <option value="" disabled>Seleccione una categoría</option>
+                                <option value="MATERIAL">Material</option>
+                                <option value="MANO_DE_OBRA">Mano de obra</option>
+                                <option value="DINERO">Dinero</option>
+                                <option value="OTRO">Otro</option>
+                            </select>
+                        </div>
+                    </div>
                     
                     <div class="form-row">
                         <div class="form-group col-md-6">

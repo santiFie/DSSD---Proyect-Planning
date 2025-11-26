@@ -42,6 +42,16 @@ public class Proyect {
     @Column
     private String bonitaCaseId;
 
+    @Column(nullable = false)
+    private Long ongOriginante;
+
+    @Column
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @Column(nullable = true, length = 1000)
+    private String closeDescription;
+
     public void addStage(Stage stage) {
         stages.add(stage);
         stage.setProyect(this);
@@ -50,6 +60,10 @@ public class Proyect {
     public void removeStage(Stage stage) {
         stages.remove(stage);
         stage.setProyect(null);
+    }
+
+    public String getBonitaCaseId() {
+        return bonitaCaseId;
     }
 
 }

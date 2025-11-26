@@ -1,0 +1,92 @@
+<div class="my-projects">
+  <div class="header">
+    <h2>Mis Proyectos</h2>
+    <button [routerLink]="['/projects']" class="btn btn-secondary">
+      Volver a todos los proyectos
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="alert">
+    Cargando tus proyectos...
+  </div>
+  
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+  
+  <div *ngIf="!loading && projects.length === 0" class="alert alert-info">
+    No tienes proyectos creados aún. <a routerLink="/projects/new">¡Crea tu primer proyecto!</a>
+  </div>
+  
+  <div class="projects-list" *ngIf="!loading && projects.length > 0">
+    <div class="project-card" *ngFor="let project of projects" [ngClass]="{ 'project-inactive': project.isActive === false }">
+      <div class="project-header">
+        <h3>{{ project.name }}</h3>
+        <div class="project-actions">
+          <a [routerLink]="['/projects/edit', project.id]" class="btn btn-small btn-secondary">
+            Editar
+          </a>
+        </div>
+      </div>
+      
+      <p class="project-description">{{ project.description }}</p>
+      
+      <div class="project-info">
+        <div class="info-item">
+          <strong>Inicio:</strong> {{ project.startDate }}
+        </div>
+        <div class="info-item" *ngIf="project.endDate">
+          <strong>Fin:</strong> {{ project.endDate }}
+        </div>
+        <div class="info-item" *ngIf="project.neighborhood">
+          <strong>Barrio:</strong> {{ project.neighborhood }}
+        </div>
+        <div class="info-item" *ngIf="project.stages">
+          <strong>Etapas:</strong> {{ project.stages.length }}
+        </div>
+      </div>
+
+      <div class="pedidos-section" *ngIf="project.isActive === true">
+        <button 
+          (click)="togglePedidos(project)" 
+          class="btn btn-link pedidos-toggle"
+        >
+          {{ project.showPedidos ? '▼' : '▶' }} 
+          Ver pedidos asociados
+        </button>
+
+        <div *ngIf="project.showPedidos" class="pedidos-content">
+          <div *ngIf="project.loadingPedidos" class="loading-pedidos">
+            Cargando pedidos...
+          </div>
+
+          <div *ngIf="!project.loadingPedidos && project.pedidos && project.pedidos.length === 0" class="no-pedidos">
+            No hay pedidos asociados a este proyecto.
+          </div>
+
+          <div *ngIf="!project.loadingPedidos && project.pedidos && project.pedidos.length > 0" class="pedidos-list">
+            <div class="pedido-item" *ngFor="let pedido of project.pedidos">
+              <div class="pedido-header">
+                <span class="pedido-id">Pedido #{{ pedido.id }}</span>
+                <span class="pedido-estado" [ngClass]="getEstadoClass(pedido.estado)">
+                  {{ pedido.estado || 'Sin estado' }}
+                </span>
+              </div>
+              <p class="pedido-descripcion" *ngIf="pedido.descripcion">
+                {{ pedido.descripcion }}
+              </p>
+              <div class="pedido-info">
+                <small *ngIf="pedido.etapaId"><strong>Etapa ID:</strong> {{ pedido.etapaId }}</small>
+              </div>
+              <div class="pedido-actions">
+                <a [routerLink]="['/pedidos', pedido.id, 'compromisos', project.id]" class="btn btn-small btn-primary">
+                  Ver compromisos
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

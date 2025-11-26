@@ -1,6 +1,5 @@
 package com.proyect_planning.proyect_planning_system.controllers;
 
-import com.proyect_planning.proyect_planning_system.entities.Stage;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaApiService;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,7 +130,7 @@ public class BonitaController {
     @PostMapping("/tasks/{taskId}/execute")
     public ResponseEntity<?> executeTask(@PathVariable String taskId) {
         try {
-            apiService.executeTask(taskId);
+            apiService.executeTask(taskId, null);
             return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "message", "Tarea ejecutada exitosamente"

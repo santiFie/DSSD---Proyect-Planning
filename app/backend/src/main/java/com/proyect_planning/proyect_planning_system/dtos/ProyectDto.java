@@ -19,7 +19,10 @@ public class ProyectDto {
     private String startDate;
     private String endDate;
     private String neighborhood;
+    private Long ongOriginante;
     private List<StageDto> stages;
+    private Boolean isActive;
+    private String closeDescription;
     
     
     // Constructor que convierte de entidad a DTO
@@ -27,6 +30,7 @@ public class ProyectDto {
         List<StageDto> stageDtos = proyect.getStages() != null ? 
             proyect.getStages().stream()
                     .map(StageDto::fromEntity)
+                    .sorted(StageDto.idComparator)
                     .collect(Collectors.toList()) : 
             null;
             
@@ -37,7 +41,10 @@ public class ProyectDto {
                 .startDate(proyect.getStartDate())
                 .endDate(proyect.getEndDate())
                 .neighborhood(proyect.getNeighborhood())
+                .ongOriginante(proyect.getOngOriginante())
                 .stages(stageDtos)
+                .isActive(proyect.getIsActive())
+                .closeDescription(proyect.getCloseDescription())
                 .build();
     }
 }

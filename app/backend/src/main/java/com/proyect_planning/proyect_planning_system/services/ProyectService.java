@@ -5,8 +5,12 @@ import java.util.List;
 
 import com.proyect_planning.proyect_planning_system.dtos.NewStageDto;
 import com.proyect_planning.proyect_planning_system.dtos.StageDto;
+import com.proyect_planning.proyect_planning_system.entities.Need;
 import com.proyect_planning.proyect_planning_system.entities.Stage;
+import com.proyect_planning.proyect_planning_system.repositories.NeedRepository;
 import com.proyect_planning.proyect_planning_system.repositories.StageRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +26,18 @@ public class ProyectService {
     private ProyectRepository proyectRepository;
     @Autowired
     private StageRepository stageRepository;
+    @Autowired
+    private NeedRepository needRepository;
 
-    public ProyectService(ProyectRepository proyectRepository, StageRepository stageRepository) {
+    private final Logger logger = LoggerFactory.getLogger(ProyectService.class);
+
+    public ProyectService(ProyectRepository proyectRepository, StageRepository stageRepository, NeedRepository needRepository) {
         this.proyectRepository = proyectRepository;
         this.stageRepository = stageRepository;
+        this.needRepository = needRepository;
     }
 
-    public Proyect createProject(NewProjectDto newProjectDto) {
+    public Proyect createProject(NewProjectDto newProjectDto, Long ongId) {
         if (proyectRepository.existsByName(newProjectDto.getName())) {
             throw new IllegalArgumentException("Ya existe un proyecto con ese nombre.");
         }
@@ -71,6 +80,7 @@ public class ProyectService {
                 .startDate(newProjectDto.getStartDate())
                 .endDate(newProjectDto.getEndDate())
                 .neighborhood(newProjectDto.getNeighborhood())
+                .ongOriginante(ongId)
                 .build();
 
         // Guardar el proyecto primero
@@ -102,6 +112,7 @@ public class ProyectService {
                         .covered(stageDto.getCovered() != null ? stageDto.getCovered() : false)
                         .startDate(stageDto.getStartDate())
                         .endDate(stageDto.getEndDate())
+                        .category(stageDto.getCategory())
                         .proyect(proyect)
                         .build();
                 
@@ -127,6 +138,14 @@ public class ProyectService {
         return proyectRepository.findAll();
     }
 
+    public List<Proyect> getProjectsByOng(Long ongId) {
+        return proyectRepository.findByOngOriginante(ongId);
+    }
+
+    public List<Proyect> getCoveredProjectsByOng(Long ongId) {
+        return proyectRepository.findCoveredProjectsByOng(ongId);
+    }
+
     public Proyect addStageToProject(Long projectId, NewStageDto newStageDto) {
         Proyect proyect = proyectRepository.findById(projectId).orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
@@ -144,6 +163,57 @@ public class ProyectService {
 
     public Proyect updateProyect(Proyect proyect) {
         return proyectRepository.save(proyect);
+    }
+
+    public int executeStage(Proyect project, Long stageId, String endDate) {
+        int cantExecuted = 0;
+        Stage stageToExecute = null;
+        logger.error(project.getName() + " execute stage " + stageId + " endDate " + endDate);
+        for (Stage stage : project.getStages()) {
+            if (stage.getId().equals(stageId)) {
+                stageToExecute = stage;
+                logger.error("Stage found: " + stageToExecute.getName());
+            } else if (stage.getExecuted()) {
+                cantExecuted++;
+            }
+        }
+
+        if (stageToExecute == null) {
+            throw new IllegalArgumentException("Etapa no encontrada en el proyecto.");
+        }
+
+        stageToExecute.setEndDate(endDate);
+        stageToExecute.setExecuted(true);
+        stageRepository.save(stageToExecute);
+        cantExecuted++;
+
+        proyectRepository.save(project);
+
+        return cantExecuted;
+    }
+
+    public void closeProject(Proyect proyect, String closeDescription) {
+        Proyect p = proyectRepository.findById(proyect.getId()).orElseThrow(() -> new IllegalArgumentException("Project not found"));
+        p.setIsActive(false);
+        p.setCloseDescription(closeDescription);
+        proyectRepository.save(p);
+    }
+
+    public void acceptCompromise(Long pedidoId) {
+        Need need = needRepository.findById(pedidoId).orElse(null);
+        if (need != null) {
+            logger.error("Need: " + need.toString());
+            Stage stage = stageRepository.findByNeeds(need);
+            if (stage != null) {
+                logger.error("Stage: " + stage.getName());
+                stage.setCovered(true);
+                stageRepository.save(stage);
+                logger.error("Cubiertaaaa");
+            } else {
+                logger.error("Stage: null");
+            }
+        }
+        logger.error("Need: null");
     }
 
 }

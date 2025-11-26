@@ -1,0 +1,123 @@
+<div class="my-projects">
+  <div class="header">
+    <h2>Mis Proyectos Cubiertos</h2>
+    <button [routerLink]="['/projects']" class="btn btn-secondary">
+      Volver a todos los proyectos
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="alert">
+    Cargando tus proyectos cubiertos...
+  </div>
+  
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+  
+  <div *ngIf="!loading && projects.length === 0" class="alert alert-info">
+    No tienes proyectos creados aún. <a routerLink="/projects/new">¡Crea tu primer proyecto!</a>
+  </div>
+  
+  <div class="projects-list" *ngIf="!loading && projects.length > 0">
+    <div class="project-card" *ngFor="let project of projects" [ngClass]="{ 'project-inactive': project.isActive === false }">
+      <div class="project-header">
+        <h3>{{ project.name }}</h3>
+        <div class="project-actions">
+          <a [routerLink]="['/projects/edit', project.id]" class="btn btn-small btn-secondary">
+            Editar
+          </a>
+        </div>
+      </div>
+      
+      <p class="project-description">{{ project.description }}</p>
+      
+      <div class="project-info">
+        <div class="info-item">
+          <strong>Inicio:</strong> {{ project.startDate }}
+        </div>
+        <div class="info-item" *ngIf="project.endDate">
+          <strong>Fin:</strong> {{ project.endDate }}
+        </div>
+        <div class="info-item" *ngIf="project.neighborhood">
+          <strong>Barrio:</strong> {{ project.neighborhood }}
+        </div>
+        <div class="info-item" *ngIf="project.stages">
+          <strong>Etapas:</strong> {{ project.stages.length }}
+        </div>
+      </div>
+
+      <div class="pedidos-section">
+        <button 
+          (click)="toggleStages(project)"
+          class="btn btn-link pedidos-toggle"
+        >
+          {{ project.showStages ? '▼' : '▶' }}
+          Ver etapas
+        </button>
+
+        <div *ngIf="project.showStages" class="pedidos-content">
+          <div *ngIf="project.loadingStages" class="loading-pedidos">
+            Cargando etapas...
+          </div>
+
+          <div *ngIf="!project.loadingStages && project.stages && project.stages.length === 0" class="no-pedidos">
+            No hay etapas asociadas a este proyecto.
+          </div>
+
+          <div *ngIf="!project.loadingStages && project.stages && project.stages.length > 0" class="pedidos-list">
+            <div class="pedido-item" *ngFor="let stage of project.stages">
+              <div class="pedido-header">
+                <span class="pedido-id">Etapa #{{ stage.id }}</span>
+                <span class="pedido-estado" [ngClass]="getFinishStateClass(stage.endDate)">
+                  {{ getFinishStateClass(stage.endDate) || 'Estado indeterminado' }}
+                </span>
+              </div>
+              <p class="pedido-descripcion" *ngIf="stage.name">
+                {{ stage.name }}
+              </p>
+              <div class="pedido-info">
+                <small *ngIf="stage.startDate"><strong>Comienzo:</strong> {{ stage.startDate | date:'short' }}</small>
+              </div>
+              <div class="pedido-actions" *ngIf="!stage.executed">
+                  <button
+                      class="btn btn-small btn-primary"
+                      (click)="executeStage(project, stage.id)"
+                  >
+                      Ejecutar tarea ▶
+                  </button>
+              </div>
+              <div class="pedido-executed" *ngIf="stage.executed">
+                <em>Tarea ejecutada</em>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        <div class="finalizar-proyecto" *ngIf="project.isClosed && project.isActive">
+          <!-- Botón para mostrar/ocultar formulario -->
+          <button
+                  class="btn btn-success btn-small"
+                  (click)="project.showCloseForm = !project.showCloseForm"
+          >
+              {{ project.showCloseForm ? 'Cancelar' : 'Finalizar proyecto' }}
+          </button>
+          <!-- Formulario de cierre -->
+          <div *ngIf="project.showCloseForm" class="close-project-form">
+              <label>Descripción de cierre:</label>
+              <textarea
+                      [(ngModel)]="project.closeDescriptionInput"
+                      rows="3"
+                      placeholder="Escribe una descripción del cierre..."
+                      class="close-description-textarea"
+              ></textarea>
+              <button
+                      class="btn btn-primary btn-small"
+                      (click)="finalizeProject(project)"
+              >
+                  Confirmar cierre
+              </button>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>

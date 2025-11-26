@@ -1,12 +1,28 @@
-<div class="project-list">
+<div class="project-list container mt-4">
     <h2>Lista de Proyectos</h2>
-    
+
+    <div class="action-buttons">
+        <button [routerLink]="['/projects/new']" class="btn btn-primary">
+            Crear un nuevo proyecto
+        </button>
+        <button [routerLink]="['/my-projects']" class="btn btn-accent">
+            Mis proyectos
+        </button>
+        <button [routerLink]="['/my-projects/covered']" class="btn btn-accent">
+            Mis proyectos cubiertos
+        </button>
+    </div>
+
     <div *ngIf="loading" class="alert">
     Cargando proyectos...
     </div>
     
-    <div *ngIf="error" class="alert alert-error">
+    <div *ngIf="error && !showObservacionModal" class="alert alert-error">
     {{ error }}
+    </div>
+
+    <div *ngIf="successMessage && !showObservacionModal" class="alert alert-success">
+    {{ successMessage }}
     </div>
     
     <div *ngIf="!loading && projects.length === 0" class="alert">
@@ -14,17 +30,85 @@
     </div>
     
     <div class="projects-grid" *ngIf="!loading && projects.length > 0">
-    <div class="card project-card" *ngFor="let project of projects">
+    <div class="card project-card" *ngFor="let project of projects" [ngClass]="{ 'project-inactive': project.isActive === false }">
         <h3>{{ project.name }}</h3>
         <p class="project-description">{{ project.description }}</p>
         <div class="project-dates">
         <small><strong>Inicio:</strong> {{ project.startDate }}</small>
         <small><strong>Fin:</strong> {{ project.endDate }}</small>
         </div>
-        <div class="project-actions">
+        <div class="project-actions" *ngIf="project.isActive === true">
         <a [routerLink]="['/projects/edit', project.id]" class="btn btn-secondary">Editar</a>
         <button (click)="deleteProject(project.id!)" class="btn btn-danger">Eliminar</button>
+        <button 
+          *ngIf="canCreateObservacion()" 
+          (click)="openObservacionModal(project)" 
+          class="btn btn-warning">
+          📝 Agregar Observación
+        </button>
         </div>
     </div>
     </div>
+</div>
+
+<!-- Modal para crear observación -->
+<div class="modal-overlay" *ngIf="showObservacionModal" (click)="closeObservacionModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Crear Observación para "{{ selectedProject?.name }}"</h3>
+      <button class="close-btn" (click)="closeObservacionModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div *ngIf="error" class="alert alert-error">
+        {{ error }}
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
+
+      <form (ngSubmit)="createObservacion()">
+        <div class="form-group">
+          <label for="ongId">ONG responsable</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="ongResponsable" 
+            [value]="getOngNameForObservacion()"
+            readonly
+            disabled>
+          <small class="form-text text-muted">
+            La ONG responsable se establece automáticamente según el proyecto.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción de la Observación *</label>
+          <textarea 
+            class="form-control" 
+            id="descripcion" 
+            rows="5" 
+            [(ngModel)]="newObservacion.descripcion" 
+            name="descripcion"
+            placeholder="Describa la observación o mejora sugerida..."
+            required></textarea>
+        </div>
+
+        <div class="alert alert-info">
+          <i>ℹ️</i> La ONG tendrá <strong>5 días</strong> para resolver esta observación.
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="loadingObservacion">
+            <span *ngIf="loadingObservacion">Creando...</span>
+            <span *ngIf="!loadingObservacion">Crear Observación</span>
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeObservacionModal()">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

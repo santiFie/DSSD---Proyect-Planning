@@ -1,0 +1,79 @@
+<div class="compromiso-form-container">
+  <div class="form-header">
+    <h2>Crear Nuevo Compromiso</h2>
+    <p class="subtitle">Pedido ID: {{ pedido.id }}</p>
+    <p class="subtitle">Proyecto ID: {{ pedido.proyectoId }} | Etapa ID: {{ pedido.etapaId }}</p>
+    <p class="subtitle">Descripción: {{ pedido.descripcion }}</p>
+  </div>
+
+  <form #compromisoForm="ngForm" (ngSubmit)="onSubmit()" class="compromiso-form">
+
+
+    <!-- Descripción -->
+    <div class="form-group">
+      <label for="descripcion" class="form-label">
+        Descripción <span class="required">*</span>
+      </label>
+      <textarea
+        id="descripcion"
+        name="descripcion"
+        [(ngModel)]="compromiso.descripcion"
+        class="form-control textarea"
+        placeholder="Describe el compromiso..."
+        required
+        minlength="10"
+        maxlength="500"
+        rows="4"
+        #descripcion="ngModel"
+      ></textarea>
+      <div class="char-count">
+        {{ compromiso.descripcion.length }}/500 caracteres
+      </div>
+      <div class="error-message" *ngIf="descripcion.invalid && descripcion.touched">
+        <span *ngIf="descripcion.errors?.['required']">La descripción es requerida</span>
+        <span *ngIf="descripcion.errors?.['minlength']">La descripción debe tener al menos 10 caracteres</span>
+        <span *ngIf="descripcion.errors?.['maxlength']">La descripción no puede exceder 500 caracteres</span>
+      </div>
+    </div>
+
+    <!-- Fecha Compromiso -->
+    <div class="form-group">
+      <label for="fechaCompromiso" class="form-label">
+        Fecha de Compromiso <span class="required">*</span>
+      </label>
+      <input
+        type="date"
+        id="fechaCompromiso"
+        name="fechaCompromiso"
+        [(ngModel)]="compromiso.fechaCompromiso"
+        class="form-control"
+        required
+        #fechaCompromiso="ngModel"
+      />
+      <div class="error-message" *ngIf="fechaCompromiso.invalid && fechaCompromiso.touched">
+        <span *ngIf="fechaCompromiso.errors?.['required']">La fecha de compromiso es requerida</span>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"
+      >
+        Cancelar
+      </button>
+      
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="compromisoForm.invalid || isSubmitting"
+      >
+        <span *ngIf="isSubmitting" class="spinner"></span>
+        {{ isSubmitting ? 'Creando...' : 'Crear Compromiso' }}
+      </button>
+    </div>
+  </form>
+</div>

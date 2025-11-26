@@ -1,0 +1,44 @@
+<div class="container mt-4">
+  <div class="row">
+    <h2 class="col header-info">Indicadores</h2>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div
+        class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3"
+      ></div>
+      <p class="fs-2 text-body-emphasis">Proyectos en término</p>
+      <span class="badge bg-success-subtle border border-success-subtle text-success-emphasis rounded-pill fs-2">%{{ proyectosEnTermino }}</span>
+    </div>
+    <div class="col">
+      <div
+        class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3"
+      ></div>
+      <p class="fs-2 text-body-emphasis">Proyectos fuera de término</p>
+      <span class="badge bg-danger-subtle border border-danger-subtle text-danger-emphasis rounded-pill fs-2">%{{ proyectosFueraTermino }}</span>
+    </div>
+  </div>
+  <hr />
+  <div class="row">
+    <div class="col">
+      <div
+        class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3"
+      ></div>
+      <p class="fs-2 text-body-emphasis">ONG más colaboradora</p>
+      <span class="badge bg-info-subtle border border-info-subtle text-info-emphasis rounded-pill fs-3">{{ ongMasColaboradora }}</span>
+    </div>
+    <div class="col">
+      <div
+        class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3"
+      ></div>
+      <p class="fs-2 text-body-emphasis">Rubro más solicitado</p>
+      <span class="badge bg-info-subtle border border-info-subtle text-info-emphasis rounded-pill fs-3">{{ rubroMasSolicitado }}</span>
+      <h5>Top 3 ONGs que aportaron al rubro</h5>
+      <ul>
+        @for (item of top3Ongs; track $index) {
+        <li>{{ item }}</li> 
+        }
+      </ul>
+    </div>
+  </div>
+</div>

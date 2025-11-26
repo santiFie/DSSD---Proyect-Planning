@@ -25,7 +25,10 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              {
+                "input": "node_modules/bootstrap/dist/css/bootstrap.min.css"
+              }
             ],
             "scripts": []
           },
@@ -40,7 +43,7 @@
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumError": "6kb"
                 }
               ],
               "outputHashing": "all"

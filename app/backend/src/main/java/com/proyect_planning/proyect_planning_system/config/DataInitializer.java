@@ -1,0 +1,129 @@
+package com.proyect_planning.proyect_planning_system.config;
+
+import com.proyect_planning.proyect_planning_system.entities.Ong;
+import com.proyect_planning.proyect_planning_system.entities.Role;
+import com.proyect_planning.proyect_planning_system.entities.User;
+import com.proyect_planning.proyect_planning_system.repositories.OngRepository;
+import com.proyect_planning.proyect_planning_system.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class DataInitializer implements CommandLineRunner {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
+    
+    private final UserRepository userRepository;
+    private final OngRepository ongRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public void run(String... args) throws Exception {
+        // Verificar si ya existe un usuario admin
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            logger.info("Inicializando datos por defecto...");
+            
+            // Crear ONG por defecto
+            Ong defaultOng = Ong.builder()
+                    .name("ONG Sistema")
+                    .originCountry("Argentina")
+                    .build();
+            defaultOng = ongRepository.save(defaultOng);
+            logger.info("ONG por defecto creada: {}", defaultOng.getName());
+
+            // Crear usuario admin por defecto
+            User adminUser = User.builder()
+                    .username("admin")
+                    .password(passwordEncoder.encode("admin123"))
+                    .email("admin@sistema.com")
+                    .role(Role.ADMIN)
+                    .ong(defaultOng)
+                    .build();
+            userRepository.save(adminUser);
+            logger.info("Usuario admin creado - Username: admin, Password: admin123, Email: admin@sistema.com");
+            
+            // Crear un usuario regular de ejemplo
+            Ong ongGeneral = Ong.builder()
+                    .name("ONG General")
+                    .originCountry("Argentina")
+                    .build();
+            ongGeneral = ongRepository.save(ongGeneral);
+            User regularUser = User.builder()
+                    .username("ongeneral")
+                    .password(passwordEncoder.encode("user123"))
+                    .email("user@sistema.com")
+                    .role(Role.USER)
+                    .ong(ongGeneral)
+                    .build();
+            userRepository.save(regularUser);
+            logger.info("Usuario regular creado - Username: user, Password: user123, Email: user@sistema.com");
+            logger.info("Usuario regular creado - Username: ongeneral, Password: user123");
+
+            // Crear un usuario regular de ejemplo
+            Ong ongMaterial = Ong.builder()
+                    .name("ONG Material")
+                    .originCountry("Argentina")
+                    .build();
+            ongMaterial = ongRepository.save(ongMaterial);
+            User usuarioMaterial = User.builder()
+                    .username("ongmaterial")
+                    .password(passwordEncoder.encode("user123"))
+                    .email("ongMaterial@sistema.com")
+                    .role(Role.USER)
+                    .ong(ongMaterial)
+                    .build();
+            userRepository.save(usuarioMaterial);
+            logger.info("Usuario regular creado - Username: ongmaterial, Password: user123");
+
+            // Crear un usuario regular de ejemplo
+            Ong ongManoObra = Ong.builder()
+                    .name("ONG Mano de Obra")
+                    .originCountry("Argentina")
+                    .build();
+            ongManoObra = ongRepository.save(ongManoObra);
+            User usuarioManoObra = User.builder()
+                    .username("ongmanoobra")
+                    .password(passwordEncoder.encode("user123"))
+                    .email("ongManoObra@sistema.com")
+                    .role(Role.USER)
+                    .ong(ongManoObra)
+                    .build();
+            userRepository.save(usuarioManoObra);
+            logger.info("Usuario regular creado - Username: ongmanoobra, Password: user123");
+
+            // Crear un usuario regular de ejemplo
+            Ong ongDinero = Ong.builder()
+                    .name("ONG Dinero")
+                    .originCountry("Argentina")
+                    .build();
+            ongDinero = ongRepository.save(ongDinero);
+            User usuarioDinero = User.builder()
+                    .username("ongdinero")
+                    .password(passwordEncoder.encode("user123"))
+                    .email("userDinero@sistema.com")
+                    .role(Role.USER)
+                    .ong(ongDinero)
+                    .build();
+            userRepository.save(usuarioDinero);
+            logger.info("Usuario regular creado - Username: ongdinero, Password: user123");
+
+            // Crear un usuario directivo de ejemplo
+            User directivoUser = User.builder()
+                    .username("directivo")
+                    .password(passwordEncoder.encode("directivo123"))
+                    .email("directivo@sistema.com")
+                    .role(Role.DIRECTIVO)
+                    .ong(defaultOng)
+                    .build();
+            userRepository.save(directivoUser);
+            logger.info("Usuario directivo creado - Username: directivo, Password: directivo123, Email: directivo@sistema.com");
+        } else {
+            logger.info("Los datos ya han sido inicializados previamente");
+        }
+    }
+}

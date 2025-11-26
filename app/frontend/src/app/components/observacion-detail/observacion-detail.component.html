@@ -1,0 +1,252 @@
+<div class="container mt-4" *ngIf="observacion">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Detalle de Observación</h2>
+    <button class="btn btn-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+  </div>
+
+  <!-- Información de la observación -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <span class="badge" [ngClass]="getEstadoClass(observacion.estado)">
+          {{ observacion.estado }}
+        </span>
+        <strong class="ms-2">{{ observacion.proyectoNombre }}</strong>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Proyecto:</strong> {{ observacion.proyectoNombre }}
+        </div>
+        <div class="col-md-6">
+          <strong>ONG Responsable:</strong> {{ observacion.ongNombre }}
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <strong>Fecha de Creación:</strong> 
+          {{ observacion.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+        <div class="col-md-6">
+          <strong>Fecha Límite:</strong> 
+          {{ observacion.fechaLimite | date:'dd/MM/yyyy HH:mm' }}
+          <span 
+            class="ms-2"
+            [ngClass]="{
+              'text-danger': getDiasRestantes(observacion.fechaLimite) < 2 && observacion.estado !== 'RESUELTA',
+              'text-warning': getDiasRestantes(observacion.fechaLimite) >= 2 && getDiasRestantes(observacion.fechaLimite) < 4 && observacion.estado !== 'RESUELTA',
+              'text-success': observacion.estado === 'RESUELTA'
+            }">
+            <ng-container *ngIf="observacion.estado === 'RESUELTA'">
+              (Resuelta)
+            </ng-container>
+            <ng-container *ngIf="observacion.estado !== 'RESUELTA'">
+              <ng-container *ngIf="getDiasRestantes(observacion.fechaLimite) > 0">
+                ({{ getDiasRestantes(observacion.fechaLimite) }} días restantes)
+              </ng-container>
+              <ng-container *ngIf="getDiasRestantes(observacion.fechaLimite) <= 0">
+                (¡Plazo vencido!)
+              </ng-container>
+            </ng-container>
+          </span>
+        </div>
+      </div>
+
+      <div class="row mb-3" *ngIf="observacion.fechaResolucion">
+        <div class="col-12">
+          <strong>Fecha de Resolución:</strong> 
+          {{ observacion.fechaResolucion | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <strong>Descripción:</strong>
+        <p class="mt-2">{{ observacion.descripcion }}</p>
+      </div>
+
+      <div *ngIf="observacion.bonitaCaseId">
+        <small class="text-muted">
+          <i class="bi bi-link"></i> Caso Bonita: {{ observacion.bonitaCaseId }}
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de correcciones -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Correcciones</h5>
+      <div class="d-flex gap-2">
+        <button 
+          *ngIf="canAddCorreccion" 
+          class="btn btn-sm btn-primary" 
+          (click)="toggleCorreccionForm()">
+          <i class="bi bi-plus-circle"></i> Agregar Corrección
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Botones de Aprobar/Rechazar para DIRECTIVO/ADMIN -->
+      <div *ngIf="canApproveReject && observacion.estado === 'EN_REVISION' && correcciones.length > 0" class="alert alert-light border mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <i class="bi bi-info-circle text-info"></i>
+            <strong>Acción requerida:</strong> Revisar y aprobar o rechazar las correcciones realizadas
+          </div>
+          <div class="d-flex gap-2">
+            <button 
+              class="btn btn-success btn-sm" 
+              (click)="resolverObservacion()"
+              [disabled]="loading">
+              <i class="bi bi-check-circle"></i> Aprobar Corrección
+            </button>
+            <button 
+              class="btn btn-danger btn-sm" 
+              (click)="toggleRechazoForm()"
+              [disabled]="loading">
+              <i class="bi bi-x-circle"></i> Rechazar Corrección
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de rechazo -->
+      <div *ngIf="showRechazoForm" class="rechazo-form-container mb-3">
+        <div class="form-header">
+          <h6 class="mb-0">
+            <i class="bi bi-exclamation-triangle"></i> Rechazar Corrección
+          </h6>
+          <small class="text-muted">Especifica las razones por las cuales la corrección no es aceptable</small>
+        </div>
+        
+        <form (ngSubmit)="rechazarCorreccion()" class="rechazo-form">
+          <div class="rechazo-container mb-3">
+            <label for="motivoRechazo" class="form-label fw-semibold">
+              Motivo del Rechazo <span class="text-danger">*</span>
+            </label>
+            <textarea 
+              class="form-control rechazo-textarea" 
+              id="motivoRechazo" 
+              rows="4" 
+              [(ngModel)]="motivoRechazo" 
+              name="motivoRechazo"
+              placeholder="Ejemplo: La documentación actualizada no incluye los puntos específicos solicitados en la observación original..."
+              required
+              [disabled]="loading"></textarea>
+            <small class="form-text text-muted">
+              <i class="bi bi-info-circle"></i> Detalla qué aspectos necesitan ser mejorados o corregidos
+            </small>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-danger btn-action" [disabled]="loading || !motivoRechazo.trim()">
+              <span *ngIf="!loading">
+                <i class="bi bi-x-circle"></i> Confirmar Rechazo
+              </span>
+              <span *ngIf="loading">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Procesando...
+              </span>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-action" (click)="toggleRechazoForm()" [disabled]="loading">
+              <i class="bi bi-arrow-left"></i> Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Formulario de nueva corrección -->
+      <div *ngIf="showCorreccionForm" class="correccion-form-container mb-4">
+        <div class="form-header">
+          <h6 class="mb-0">
+            <i class="bi bi-pencil-square"></i> Nueva Corrección
+          </h6>
+          <small class="text-muted">Describe las acciones realizadas para resolver la observación</small>
+        </div>
+        
+        <form (ngSubmit)="createCorreccion()" class="correccion-form">
+          <div class="correction-container mb-3">
+            <label for="detalle" class="form-label fw-semibold">
+              Detalle de la Corrección <span class="text-danger">*</span>
+            </label>
+            <textarea 
+              class="form-control correccion-textarea" 
+              id="detalle" 
+              rows="5" 
+              [(ngModel)]="newCorreccion.detalle" 
+              name="detalle"
+              placeholder="Ejemplo: Se actualizó la documentación del proyecto y se agregaron los anexos faltantes..."
+              required
+              [disabled]="loading"></textarea>
+            <small class="form-text text-muted">
+              <i class="bi bi-info-circle"></i> Sé específico sobre las mejoras o cambios realizados
+            </small>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-action" [disabled]="loading || !newCorreccion.detalle.trim()">
+              <span *ngIf="!loading">
+                <i class="bi bi-check-circle"></i> Registrar Corrección
+              </span>
+              <span *ngIf="loading">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Registrando...
+              </span>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-action" (click)="toggleCorreccionForm()" [disabled]="loading">
+              <i class="bi bi-x-circle"></i> Cancelar
+            </button>
+          </div>
+        </form>
+        <hr class="my-4">
+      </div>
+
+      <!-- Lista de correcciones -->
+      <div *ngIf="correcciones.length === 0 && !showCorreccionForm" class="alert alert-info">
+        <i class="bi bi-info-circle"></i> 
+        No hay correcciones registradas para esta observación.
+      </div>
+
+      <div *ngFor="let correccion of correcciones; let i = index" class="mb-3">
+        <div class="card">
+          <div class="card-header bg-light">
+            <div class="d-flex justify-content-between">
+              <strong>Corrección #{{ i + 1 }}</strong>
+              <small class="text-muted">
+                {{ correccion.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+              </small>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="mb-2">{{ correccion.detalle }}</p>
+            <small class="text-muted">
+              <i class="bi bi-person"></i> Por: {{ correccion.usuarioNombre }}
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-4" *ngIf="!observacion">
+  <div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle"></i> 
+    Cargando observación...
+  </div>
+</div>

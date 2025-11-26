@@ -37,6 +37,10 @@ public class Stage {
     @Column
     private String endDate;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean executed = false;
+
     @ManyToOne
     @JoinColumn(name = "proyect_id", nullable = false)
     @JsonIgnore
@@ -45,6 +49,9 @@ public class Stage {
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Revision> revisions = new ArrayList<>();
+
+    @Column(nullable = false)
+    private String category;
 
     // En Stage
     public void addRevision(Revision revision) {

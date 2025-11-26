@@ -1,0 +1,32 @@
+<nav class="navbar" *ngIf="currentUser">
+  <div class="navbar-container">
+    <div class="navbar-brand">
+      <a routerLink="/">📋 Sistema de Planificación</a>
+    </div>
+
+    <div class="navbar-menu">
+      <a routerLink="/projects" routerLinkActive="active">Proyectos</a>
+      <a routerLink="/pedidos" routerLinkActive="active">Pedidos</a>
+      <a routerLink="/observaciones" routerLinkActive="active">Observaciones</a>
+      <div class="admin-menu" *ngIf="isDirectivo()">        
+        <a routerLink="/indicadores" routerLinkActive="active">Indicadores</a>
+      </div>    
+
+      <div class="admin-menu" *ngIf="isAdmin()">
+        <a routerLink="/admin/users" routerLinkActive="active">👥 Usuarios</a>
+        <a routerLink="/admin/ongs" routerLinkActive="active">🏢 ONGs</a>
+      </div>
+    </div>
+
+    <div class="navbar-user">
+      <div class="user-info">
+        <span class="username">{{ currentUser.username }}</span>
+        <span class="role" [class.admin]="currentUser.role === 'ADMIN'" [class.directivo]="currentUser.role === 'DIRECTIVO'">
+          {{ currentUser.role }}
+        </span>
+        <span class="ong">{{ currentUser.ongName }}</span>
+      </div>
+      <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
+    </div>
+  </div>
+</nav>
