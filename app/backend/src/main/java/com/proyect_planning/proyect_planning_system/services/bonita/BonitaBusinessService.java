@@ -415,7 +415,7 @@ public class BonitaBusinessService {
                                     pedidoInfo.put("pedidos", value);
                                     pedidoInfo.put("processName", processName);
                                     result.add(pedidoInfo);
-                                    break; // Ya encontramos jsonPedidos en este subproceso
+                                    break;
                                 }
                             }
                         }
@@ -434,4 +434,74 @@ public class BonitaBusinessService {
             throw new BonitaException("Error obteniendo todos los pedidos desde Bonita", e);
         }
     }
+
+    public List<Map<String, Object>> getAllCompromisos() throws BonitaException {
+        try {
+
+            List<Map<String, Object>> result = new ArrayList<>();
+            
+            // Obtener todas las instancias de proceso padre
+            List<Map<String, Object>> allCases = bonitaApiSvc.getProcessInstances();
+
+            // Para cada caso padre, buscar sus tareas humanas
+            for (Map<String, Object> caseInstance : allCases) {
+                String parentCaseId = caseInstance.get("id").toString();
+                String processName = caseInstance.get("processDefinitionId") != null ? 
+                    caseInstance.get("processDefinitionId").toString() : "unknown";
+                
+                logger.info("─── Procesando caso padre: caseId={}, proceso={}", parentCaseId, processName);
+                
+                try {
+                    // Obtener las tareas humanas del caso padre
+                    List<Map<String, String>> humanTasks = bonitaApiSvc.getTasksByCaseId(parentCaseId);
+                    logger.info("    → Tareas humanas encontradas: {}", humanTasks.size());
+                    
+                    // Para cada tarea, el parentCaseId indica el subproceso
+                    for (Map<String, String> task : humanTasks) {
+                        String taskParentCaseId = task.get("parentCaseId");
+                        
+                        if (taskParentCaseId != null && !taskParentCaseId.equals(parentCaseId)) {
+                            // Este parentCaseId es el ID del subproceso
+                            logger.info("    → Subproceso encontrado via tarea: {}", taskParentCaseId);
+                            
+                            // Obtener variables del subproceso
+                            List<Map<String, Object>> variables = bonitaApiSvc.getVariablesByCaseId(taskParentCaseId);
+                            logger.info("       Variables en subproceso: {}", variables.size());
+                            
+                            // Buscar jsonPedidos
+                            for (Map<String, Object> variable : variables) {
+                                String varName = (String) variable.get("name");
+                                
+                                if ("jsonCompromisos".equals(varName)) {
+                                    Object value = variable.get("value");
+                                    
+                                    logger.info("    ✓ jsonCompromisos encontrado! Subproceso={}, valor presente={}", 
+                                        taskParentCaseId, value != null);
+                                    
+                                    Map<String, Object> compromisoInfo = new HashMap<>();
+                                    compromisoInfo.put("parentCaseId", parentCaseId);
+                                    compromisoInfo.put("subprocessCaseId", taskParentCaseId);
+                                    compromisoInfo.put("compromisos", value);
+                                    compromisoInfo.put("processName", processName);
+                                    result.add(compromisoInfo);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                } catch (Exception e) {
+                    logger.warn("Error procesando caso padre {}: {}", parentCaseId, e.getMessage());
+                }
+            }
+            
+            logger.info("═══ Resultado: {} subprocesos con pedidos encontrados ═══", result.size());
+            return result;
+            
+        } catch (Exception e) {
+            logger.error("Error obteniendo todos los compromisos desde Bonita", e);
+            throw new BonitaException("Error obteniendo todos los compromisos desde Bonita", e);
+        }
+    }
+
 }

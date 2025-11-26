@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proyect_planning.proyect_planning_system.services.bonita.BonitaBusinessService;
 import com.proyect_planning.proyect_planning_system.services.cloud.CloudService;
+import com.proyect_planning.proyect_planning_system.services.cloud.dto.CompromisoCloudDTO;
 import com.proyect_planning.proyect_planning_system.services.cloud.dto.PedidoCloudDTO;
 import com.proyect_planning.proyect_planning_system.dtos.NewCompromisoDto;
 import com.proyect_planning.proyect_planning_system.entities.Proyect;
@@ -45,14 +46,10 @@ public class PedidosController {
     public ResponseEntity<?> getAllPedidos() {
         try {
             // Primero intentar obtener pedidos desde Bonita
-            logger.info("Tratando de obtener pedidos desde Bonita...");
             List<Map<String, Object>> pedidosFromBonita = bonitaBusinessSvc.getAllPedidosFromBonita();
             
             if (pedidosFromBonita != null && !pedidosFromBonita.isEmpty()) {
-                logger.info("Subprocesos con pedidos obtenidos desde Bonita: {}", pedidosFromBonita.size());
-                
                 // Aplanar la lista de pedidos parseando el JSON
-                // porque esto devuelve una lista de subprocesos, cada uno con su JSON string de pedidos y otros datos
                 List<Map<String, Object>> allPedidos = new ArrayList<>();
                 ObjectMapper mapper = new ObjectMapper();
                 
@@ -107,14 +104,68 @@ public class PedidosController {
         }
     }
 
-    @GetMapping("/{pedidoId}/compromisos")
-    public ResponseEntity<?> getCompromisosByPedidoId(@PathVariable Long pedidoId) {
+    private List<CompromisoCloudDTO> getCompromisosByPedidoIdFromCloud(Long pedidoId) {
         try {
-            List<?> compromisos = cloudService.getCompromisosByPedidoId(pedidoId);
-            return ResponseEntity.ok().body(compromisos);
+            List<CompromisoCloudDTO> compromisos = cloudService.getCompromisosByPedidoId(pedidoId);
+            return compromisos;
         } catch (Exception e) {
             logger.error("Error al obtener los compromisos del pedido {}: {}", pedidoId, e.getMessage());
-            return ResponseEntity.status(500).body("Error al obtener los compromisos del pedido: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    @GetMapping("/{pedidoId}/compromisos")
+    public ResponseEntity<?> getCompromisosByPedidoId(@PathVariable Long pedidoId){
+        try {
+            // Primero intentar obtener compromisos desde Bonita
+            List<Map<String, Object>> compromisosFromBonita = bonitaBusinessSvc.getAllCompromisos();
+            
+            if (compromisosFromBonita != null && !compromisosFromBonita.isEmpty()) {
+                // Aplanar la lista de compromisos parseando el JSON
+                List<Map<String, Object>> allCompromisos = new ArrayList<>();
+                ObjectMapper mapper = new ObjectMapper();
+                
+                for (Map<String, Object> compromisoInfo : compromisosFromBonita) {
+                    String compromisosJson = (String) compromisoInfo.get("compromisos");
+                    
+                    if (compromisosJson != null && !compromisosJson.isEmpty()) {
+                        List<Map<String, Object>> compromisosList = mapper.readValue(
+                            compromisosJson, 
+                            new TypeReference<List<Map<String, Object>>>() {}
+                        );
+                        
+                        // Filtrar compromisos por pedidoId
+                        for (Map<String, Object> compromiso : compromisosList) {
+                            // Primero intentar con pedidoId directo
+                            Object pedidoIdObj = compromiso.get("pedidoId");
+                            
+                            if (pedidoIdObj != null && pedidoIdObj.toString().equals(pedidoId.toString())) {
+                                allCompromisos.add(compromiso);
+                                continue;
+                            }
+                            
+                            // Si no existe, intentar con objeto pedido anidado
+                            Object pedidoObj = compromiso.get("pedido");
+                            if (pedidoObj instanceof Map) {
+                                Object idObj = ((Map<?, ?>) pedidoObj).get("id");
+                                if (idObj != null && idObj.toString().equals(pedidoId.toString())) {
+                                    allCompromisos.add(compromiso);
+                                }
+                            }
+                        }
+                    }
+                }                
+                
+                return ResponseEntity.ok().body(allCompromisos);
+            }
+            
+            // Si no hay pedidos en Bonita, los obtiene desde Cloud
+            logger.warn("No se encontraron pedidos en Bonita, obteniendo desde Cloud...");
+            List<CompromisoCloudDTO> compromisoCloudDTOs = this.getCompromisosByPedidoIdFromCloud(pedidoId);
+            return ResponseEntity.ok().body(compromisoCloudDTOs);            
+        } catch (Exception e) {
+            logger.error("Error al obtener los pedidos: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body("Error al obtener los pedidos: " + e.getMessage());
         }
     }
 
