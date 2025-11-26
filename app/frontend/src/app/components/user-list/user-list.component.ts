@@ -26,6 +26,7 @@ export class UserListComponent implements OnInit {
   newUser: RegisterUserRequest = {
     username: '',
     password: '',
+    email: '',
     role: 'USER',
     ongId: 0
   };
@@ -101,6 +102,7 @@ export class UserListComponent implements OnInit {
     this.newUser = {
       username: '',
       password: '',
+      email: '',
       role: 'USER',
       ongId: this.ongs.length > 0 ? this.ongs[0].id : 0
     };

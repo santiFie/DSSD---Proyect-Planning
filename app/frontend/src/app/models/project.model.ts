@@ -10,6 +10,7 @@ export interface Stage {
   covered: boolean;
   startDate: string;
   endDate?: string;
+  executed: boolean;
   category: string;
 }
 
@@ -22,6 +23,8 @@ export interface Project {
   neighborhood?: string;
   ongOriginante?: number;
   stages: Stage[];
+  isActive?: boolean;
+  closeDescription: string;
 }
 
 export interface NewProjectDto {

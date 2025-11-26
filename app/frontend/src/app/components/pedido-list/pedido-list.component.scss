@@ -1,5 +1,125 @@
-.pedido-list { padding: 1rem; }
-.pedido-table { width: 100%; border-collapse: collapse; }
-.pedido-table th, .pedido-table td { border: 1px solid #ddd; padding: 8px; }
-.pedido-table th { background: #f5f5f5; }
-.error { color: red; }
+.pedido-list { 
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.error { 
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+}
+
+.pedido-table { 
+  width: 100%; 
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+
+  th, td { 
+    border: 1px solid #e0e0e0; 
+    padding: 12px 16px;
+    text-align: left;
+  }
+  
+  th { 
+    background: #f5f5f5;
+    font-weight: 600;
+    color: #333;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+
+  tbody tr {
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f9f9f9;
+    }
+  }
+
+  td {
+    color: #555;
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.badge-abierto {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.badge-cerrado {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+
+  &.badge-pendiente {
+    background-color: #fff3e0;
+    color: #ef6c00;
+  }
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &.btn-primary {
+    background-color: #1976d2;
+    color: white;
+
+    &:hover {
+      background-color: #1565c0;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.text-muted {
+  color: #999;
+  font-style: italic;
+  font-size: 0.9rem;
+}

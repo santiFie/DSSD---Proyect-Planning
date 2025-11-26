@@ -59,11 +59,6 @@
   }
 }
 
-.project-inactive {
-  background-color: #d4f7d0;
-  border: 1px solid #82c776;
-}
-
 .project-header {
   display: flex;
   justify-content: space-between;
@@ -100,6 +95,37 @@
       color: #333;
     }
   }
+}
+
+.project-inactive {
+  background-color: #d4f7d0;
+  border: 1px solid #82c776;
+}
+.finalizar-proyecto {
+  margin-top: 10px;
+  text-align: right;
+
+  .btn-success {
+    background: #28a745;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+  }
+}
+
+.close-project-form {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f6f6f6;
+  border-radius: 8px;
+}
+
+.close-description-textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 6px;
 }
 
 .project-actions {

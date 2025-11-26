@@ -7,6 +7,7 @@ export interface AuthResponse {
   token: string;
   userId: number;
   username: string;
+  email: string;
   role: 'ADMIN' | 'USER';
   ongId: number;
   ongName: string;
@@ -15,6 +16,7 @@ export interface AuthResponse {
 export interface RegisterUserRequest {
   username: string;
   password: string;
+  email: string;
   role: 'ADMIN' | 'USER';
   ongId: number;
 }

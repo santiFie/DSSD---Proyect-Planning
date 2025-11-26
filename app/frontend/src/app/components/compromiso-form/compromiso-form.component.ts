@@ -17,7 +17,13 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class CompromisoFormComponent implements OnInit {
 
-  pedido: Pedido = { id: -1 };
+  pedido: Pedido = { 
+    id: -1,
+    proyectoId: -1,
+    etapaId: -1,
+    descripcion: '',
+    estado: 'ABIERTO'
+  };
 
   compromiso: NewCompromisoDto = {
     ongColaboranteId: 0,

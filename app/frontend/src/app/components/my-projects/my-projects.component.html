@@ -19,7 +19,7 @@
   </div>
   
   <div class="projects-list" *ngIf="!loading && projects.length > 0">
-    <div class="project-card" *ngFor="let project of projects">
+    <div class="project-card" *ngFor="let project of projects" [ngClass]="{ 'project-inactive': project.isActive === false }">
       <div class="project-header">
         <h3>{{ project.name }}</h3>
         <div class="project-actions">
@@ -46,7 +46,7 @@
         </div>
       </div>
 
-      <div class="pedidos-section">
+      <div class="pedidos-section" *ngIf="project.isActive === true">
         <button 
           (click)="togglePedidos(project)" 
           class="btn btn-link pedidos-toggle"
@@ -77,7 +77,6 @@
               </p>
               <div class="pedido-info">
                 <small *ngIf="pedido.etapaId"><strong>Etapa ID:</strong> {{ pedido.etapaId }}</small>
-                <small *ngIf="pedido.createdAt"><strong>Creado:</strong> {{ pedido.createdAt | date:'short' }}</small>
               </div>
               <div class="pedido-actions">
                 <a [routerLink]="['/pedidos', pedido.id, 'compromisos', project.id]" class="btn btn-small btn-primary">

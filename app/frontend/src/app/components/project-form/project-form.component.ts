@@ -70,6 +70,7 @@ export class ProjectFormComponent implements OnInit {
       covered: false,
       startDate: this.project.startDate || '',
       endDate: '',
+      executed: false,
       category: ''
     };
     this.project.stages.push(newStage);

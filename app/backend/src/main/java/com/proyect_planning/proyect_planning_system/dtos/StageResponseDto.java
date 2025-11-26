@@ -17,6 +17,7 @@ public class StageResponseDto {
     private Boolean covered;
     private String startDate;
     private String endDate;
+    private Boolean executed;
     // No incluimos las revisiones para simplificar la respuesta
     // Si necesitas revisiones, puedes crear un endpoint específico
 }
