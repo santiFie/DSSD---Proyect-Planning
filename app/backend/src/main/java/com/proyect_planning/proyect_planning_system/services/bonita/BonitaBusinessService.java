@@ -247,8 +247,6 @@ public class BonitaBusinessService {
                 taskData.put("correccion", correccionInput);
                 
                 bonitaApiSvc.executeTask(tarea.get("id"), taskData);
-                logger.info("Corrección notificada en Bonita para la observación {}. CorreccionId: {}", 
-                    observacion.getId(), correccion.getId());
             } else {
                 logger.warn("No se encontró la tarea 'Resolver Observaciones' para el caso {}", 
                     observacion.getBonitaCaseId());
@@ -285,8 +283,6 @@ public class BonitaBusinessService {
                 taskData.put("observacion", observacionInput);
                 
                 bonitaApiSvc.executeTask(tarea.get("id"), taskData);
-                logger.info("Estado de observación actualizado en Bonita: {} - Estado: {}", 
-                    observacion.getId(), observacion.getEstado());
             } else {
                 logger.warn("No se encontró la tarea 'Verificar Correcciones' para el caso {}", 
                     observacion.getBonitaCaseId());
@@ -321,17 +317,12 @@ public class BonitaBusinessService {
      */
     public String getPedidosFromBonita(String caseId) throws BonitaException {
         try {
-            logger.info("Buscando jsonPedidos para caso padre: {}", caseId);
             
             // Obtener los subprocesos del caso padre
-            List<Map<String, Object>> subprocesses = bonitaApiSvc.getSubProcessesByCaseId(caseId);
-            
-            logger.info("  → Subprocesos encontrados: {}", subprocesses.size());
-            
+            List<Map<String, Object>> subprocesses = bonitaApiSvc.getSubProcessesByCaseId(caseId);            
             // Buscar en cada subproceso la variable jsonPedidos
             for (Map<String, Object> subprocess : subprocesses) {
                 String subprocessCaseId = subprocess.get("id").toString();
-                logger.info("  → Buscando en subproceso: {}", subprocessCaseId);
                 
                 // Obtener variables del subproceso
                 List<Map<String, Object>> variables = bonitaApiSvc.getVariablesByCaseId(subprocessCaseId);
@@ -340,9 +331,10 @@ public class BonitaBusinessService {
                     String varName = (String) variable.get("name");
                     
                     if ("jsonPedidos".equals(varName)) {
+                        logger.info("jsonPedidos se encontró y tiene estos valores: {}  ", 
+                            variable.get("value"));
+                
                         Object value = variable.get("value");
-                        logger.info("  ✓ jsonPedidos encontrado en subproceso {}: {}", 
-                            subprocessCaseId, value != null ? "valor presente" : "null");
                         return value != null ? value.toString() : null;
                     }
                 }
@@ -379,13 +371,10 @@ public class BonitaBusinessService {
                 String parentCaseId = caseInstance.get("id").toString();
                 String processName = caseInstance.get("processDefinitionId") != null ? 
                     caseInstance.get("processDefinitionId").toString() : "unknown";
-                
-                logger.info("─── Procesando caso padre: caseId={}, proceso={}", parentCaseId, processName);
-                
+                                
                 try {
                     // Obtener las tareas humanas del caso padre
                     List<Map<String, String>> humanTasks = bonitaApiSvc.getTasksByCaseId(parentCaseId);
-                    logger.info("    → Tareas humanas encontradas: {}", humanTasks.size());
                     
                     // Para cada tarea, el parentCaseId indica el subproceso
                     for (Map<String, String> task : humanTasks) {
@@ -393,11 +382,10 @@ public class BonitaBusinessService {
                         
                         if (taskParentCaseId != null && !taskParentCaseId.equals(parentCaseId)) {
                             // Este parentCaseId es el ID del subproceso
-                            logger.info("    → Subproceso encontrado via tarea: {}", taskParentCaseId);
+                            logger.info("Subproceso encontrado via tarea: {}", taskParentCaseId);
                             
                             // Obtener variables del subproceso
                             List<Map<String, Object>> variables = bonitaApiSvc.getVariablesByCaseId(taskParentCaseId);
-                            logger.info("       Variables en subproceso: {}", variables.size());
                             
                             // Buscar jsonPedidos
                             for (Map<String, Object> variable : variables) {
@@ -426,7 +414,7 @@ public class BonitaBusinessService {
                 }
             }
             
-            logger.info("═══ Resultado: {} subprocesos con pedidos encontrados ═══", result.size());
+            logger.info("Resultado: {} subprocesos con pedidos encontrados", result.size());
             return result;
             
         } catch (Exception e) {
@@ -448,13 +436,10 @@ public class BonitaBusinessService {
                 String parentCaseId = caseInstance.get("id").toString();
                 String processName = caseInstance.get("processDefinitionId") != null ? 
                     caseInstance.get("processDefinitionId").toString() : "unknown";
-                
-                logger.info("─── Procesando caso padre: caseId={}, proceso={}", parentCaseId, processName);
-                
+                                
                 try {
                     // Obtener las tareas humanas del caso padre
                     List<Map<String, String>> humanTasks = bonitaApiSvc.getTasksByCaseId(parentCaseId);
-                    logger.info("    → Tareas humanas encontradas: {}", humanTasks.size());
                     
                     // Para cada tarea, el parentCaseId indica el subproceso
                     for (Map<String, String> task : humanTasks) {
@@ -462,11 +447,10 @@ public class BonitaBusinessService {
                         
                         if (taskParentCaseId != null && !taskParentCaseId.equals(parentCaseId)) {
                             // Este parentCaseId es el ID del subproceso
-                            logger.info("    → Subproceso encontrado via tarea: {}", taskParentCaseId);
+                            logger.info("Subproceso encontrado via tarea: {}", taskParentCaseId);
                             
                             // Obtener variables del subproceso
                             List<Map<String, Object>> variables = bonitaApiSvc.getVariablesByCaseId(taskParentCaseId);
-                            logger.info("       Variables en subproceso: {}", variables.size());
                             
                             // Buscar jsonPedidos
                             for (Map<String, Object> variable : variables) {
@@ -475,8 +459,7 @@ public class BonitaBusinessService {
                                 if ("jsonCompromisos".equals(varName)) {
                                     Object value = variable.get("value");
                                     
-                                    logger.info("    ✓ jsonCompromisos encontrado! Subproceso={}, valor presente={}", 
-                                        taskParentCaseId, value != null);
+                                    logger.info("Se encontró jsonCompromisos - valor presente={}", value != null);
                                     
                                     Map<String, Object> compromisoInfo = new HashMap<>();
                                     compromisoInfo.put("parentCaseId", parentCaseId);

@@ -160,7 +160,7 @@ public class PedidosController {
             }
             
             // Si no hay pedidos en Bonita, los obtiene desde Cloud
-            logger.warn("No se encontraron pedidos en Bonita, obteniendo desde Cloud...");
+            logger.warn("No se encontraron compromisos en Bonita, obteniendo desde Cloud...");
             List<CompromisoCloudDTO> compromisoCloudDTOs = this.getCompromisosByPedidoIdFromCloud(pedidoId);
             return ResponseEntity.ok().body(compromisoCloudDTOs);            
         } catch (Exception e) {

@@ -184,17 +184,17 @@ public class ObservacionService {
         
         Correccion comentarioRechazo = Correccion.builder()
                 .observacion(observacion)
-                .detalle("❌ CORRECCIÓN RECHAZADA - Motivo: " + motivoRechazo)
+                .detalle("CORRECCIÓN RECHAZADA - Motivo: " + motivoRechazo)
                 .usuario(sistema)
                 .build();
         
         correccionRepository.save(comentarioRechazo);
 
-        // Establecer estado RECHAZADA (no PENDIENTE)
+        // Establecer estado RECHAZADA
         observacion.setEstado(EstadoObservacion.RECHAZADA);
         observacion = observacionRepository.save(observacion);
 
-        // Notificar a Bonita sobre el rechazo (estado RECHAZADA != RESUELTA)
+        // Notificar a Bonita sobre el rechazo (estado RECHAZADA)
         try {
             bonitaBusinessService.actualizarEstadoObservacionEnBonita(observacion);
         } catch (Exception e) {
@@ -227,8 +227,6 @@ public class ObservacionService {
             }
         }
     }
-
-    // ========== Métodos de conversión ==========
 
     /**
      * Envía un email de notificación a los usuarios de la organización del proyecto
