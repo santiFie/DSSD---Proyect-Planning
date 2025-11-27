@@ -414,7 +414,7 @@ public class BonitaApiService {
                     })
                     .flatMap(list -> {
                         if (list == null || list.isEmpty()) {
-                            return Mono.error(new IllegalStateException("Lista vacía, reintentando..."));
+                            return Mono.error(new IllegalStateException("Lista vacia, reintentando..."));
                         } else {
                             return Mono.just(list);
                         }
@@ -425,7 +425,7 @@ public class BonitaApiService {
                                     logger.warn("Reintentando obtener tareas (intento {}): {}",
                                             retrySignal.totalRetriesInARow() + 1, retrySignal.failure().getMessage()))
                             .onRetryExhaustedThrow((spec, signal) ->
-                                    new BonitaException("Falló la obtención de tareas después de varios intentos", signal.failure()))
+                                    new BonitaException("Fallo la obtencion de tareas despues de varios intentos", signal.failure()))
                     )
                     .block();
         } catch (Exception e) {
@@ -557,7 +557,7 @@ public class BonitaApiService {
             List<Map<String, Object>> subprocesses = objectMapper.convertValue(jsonNode,
                 new TypeReference<List<Map<String, Object>>>() {});
 
-            logger.info("Subprocesos encontrados para caso padre {}: {}", parentCaseId, subprocesses.size());
+            logger.debug("Subprocesos encontrados para caso padre {}: {}", parentCaseId, subprocesses.size());
 
             return subprocesses;
 

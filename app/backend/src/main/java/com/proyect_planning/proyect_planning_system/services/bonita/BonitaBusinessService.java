@@ -35,7 +35,7 @@ public class BonitaBusinessService {
      */
     public String registrarProyecto(Proyect project) throws BonitaException {
         // Obtener el ID del proceso "Gestion Proyecto"
-        logger.error("Iniciando...");
+        logger.debug("Iniciando...");
         String processId = bonitaApiSvc.getProcessId("Gestion Proyecto");
         // Preparar variables para el proceso
         Map<String, Object> processVariables = new HashMap<>();
@@ -47,13 +47,13 @@ public class BonitaBusinessService {
         proyectoInput.put("tipo_proyecto", "");
         proyectoInput.put("descripcion", project.getDescription());
 
-        logger.error("Proyecto registrado: {}", proyectoInput.toString());
+        logger.debug("Proyecto registrado: {}", proyectoInput.toString());
 
         List<Map<String, Object>> etapasInput = new ArrayList<>();
         if (project.getStages() != null) {
-            logger.error("Stages registrado: {}", project.getStages().size());
+            logger.debug("Stages registrado: {}", project.getStages().size());
             for (int i = 0; i < project.getStages().size(); i++) {
-                logger.error("Stages registrado dentro del for: {}", project.getStages().get(i).getId());
+                logger.debug("Stages registrado dentro del for: {}", project.getStages().get(i).getId());
                 Stage stage = project.getStages().get(i);
                 Map<String, Object> etapa = new HashMap<>();
                 etapa.put("nro_orden", stage.getId());
@@ -71,7 +71,7 @@ public class BonitaBusinessService {
         processVariables.put("proyectoInput", proyectoInput);
         processVariables.put("etapasInput", etapasInput);
 
-        logger.error("Variables para Bonita {} ", processVariables);
+        logger.debug("Variables para Bonita {} ", processVariables);
 
         // Iniciar el proceso en Bonita
         Map<String, String> processInstance = bonitaApiSvc.startProcessInstance(processId, processVariables);
@@ -81,7 +81,7 @@ public class BonitaBusinessService {
 
         if (humanTasks != null && !humanTasks.isEmpty()) {
             // Ejecutar la primera tarea humana
-            logger.error("Tarea humana encontrada: {}", humanTasks.get(0));
+            logger.debug("Tarea humana encontrada: {}", humanTasks.get(0));
             bonitaApiSvc.executeTask(humanTasks.get(0).get("id"), null);
         } else {
             logger.error("No se encontraron tareas humanas para el caso ID: {}", caseId);
@@ -106,7 +106,7 @@ public class BonitaBusinessService {
         if (tareas != null && !tareas.isEmpty()) {
             // Ejecutar la tarea humana, que debería ser "Comprometer Ayuda para la Etapa"
             if (Boolean.FALSE.equals(tareas.get(0).get("name").contains("Comprometer Ayuda para la Etapa"))) {
-                logger.info("Tareas encontradas: {}", tareas);
+                logger.debug("Tareas encontradas: {}", tareas);
                 logger.warn("La tarea encontrada no es 'Comprometer Ayuda para la Etapa': {}", tareas.get(0));
                 throw new BonitaException("La tarea encontrada no es 'Comprometer Ayuda para la Etapa'. Nombre tarea: " + tareas.get(0).get("name"));
             }
@@ -137,7 +137,7 @@ public class BonitaBusinessService {
         if (tareas != null && !tareas.isEmpty()) {
             // Ejecutar la tarea humana, que debería ser "Analizar compromiso"
             if (Boolean.FALSE.equals(tareas.get(0).get("name").contains("Analizar compromiso"))) {
-                logger.info("Tareas encontradas: {}", tareas);
+                logger.debug("Tareas encontradas: {}", tareas);
                 logger.warn("La tarea encontrada no es 'Analizar compromiso': {}", tareas.get(0));
                 throw new BonitaException("La tarea encontrada no es 'Analizar compromiso'. Nombre tarea: " + tareas.get(0).get("name"));
             }
@@ -148,7 +148,7 @@ public class BonitaBusinessService {
             taskData.put("analisis_compromiso", analisisCompromiso);
             bonitaApiSvc.executeTask(tareas.get(0).get("id"), taskData);
 
-            logger.error("Compromiso analizado en Bonita. CaseId: {}, Acepta: {}, CompromisoId: {}",
+            logger.debug("Compromiso analizado en Bonita. CaseId: {}, Acepta: {}, CompromisoId: {}",
                     bonitaCaseId, aceptaCompromiso, compromisoId);
         } else {
             logger.error("No se encontraron tareas humanas para el caso ID: {}", bonitaCaseId);
@@ -169,7 +169,7 @@ public class BonitaBusinessService {
         if (tareas != null && !tareas.isEmpty()) {
             // Ejecutar la tarea humana, que debería ser "Ejecutar Tarea Comprometida"
             if (Boolean.FALSE.equals(tareas.get(0).get("name").contains("Ejecutar Tarea Comprometida"))) {
-                logger.info("Tareas encontradas: {}", tareas);
+                logger.debug("Tareas encontradas: {}", tareas);
                 logger.warn("La tarea encontrada no es 'Ejecutar Tarea Comprometida': {}", tareas.get(0));
                 throw new BonitaException("La tarea encontrada no es 'Ejecutar Tarea Comprometida'. Nombre tarea: " + tareas.get(0).get("name"));
             }
@@ -197,7 +197,7 @@ public class BonitaBusinessService {
         if (tareas != null && !tareas.isEmpty()) {
             // Ejecutar la tarea humana, que debería ser "Terminar proyecto"
             if (Boolean.FALSE.equals(tareas.get(0).get("name").contains("Terminar proyecto"))) {
-                logger.info("Tareas encontradas: {}", tareas);
+                logger.debug("Tareas encontradas: {}", tareas);
                 logger.warn("La tarea encontrada no es 'Terminar proyecto': {}", tareas.get(0));
                 throw new BonitaException("La tarea encontrada no es 'Terminar proyecto'. Nombre tarea: " + tareas.get(0).get("name"));
             }
@@ -236,7 +236,7 @@ public class BonitaBusinessService {
         observacionesInput.add(observacionInput);
         processVariables.put("observacionesInput", observacionesInput);
 
-        logger.info("Variables para Bonita (Observación): {}", processVariables);
+        logger.debug("Variables para Bonita (Observación): {}", processVariables);
 
         // Iniciar el proceso en Bonita
         Map<String, String> processInstance = bonitaApiSvc.startProcessInstance(processId, processVariables);
@@ -246,7 +246,7 @@ public class BonitaBusinessService {
         List<Map<String, String>> humanTasks = bonitaApiSvc.getTasksByCaseId(caseId);
 
         if (humanTasks != null && !humanTasks.isEmpty()) {
-            logger.info("Tarea humana encontrada para observación: {}", humanTasks.get(0));
+            logger.debug("Tarea humana encontrada para observación: {}", humanTasks.get(0));
 
             // Preparar el objeto de observación para la tarea con el formato requerido por Bonita
             Map<String, Object> observacionParaTarea = new HashMap<>();
@@ -262,7 +262,7 @@ public class BonitaBusinessService {
             taskData.put("observacionesInput", observacionesArray);
 
             bonitaApiSvc.executeTask(humanTasks.get(0).get("id"), taskData);
-            logger.info("Tarea ejecutada para observación con caseId: {}", caseId);
+            logger.debug("Tarea ejecutada para observación con caseId: {}", caseId);
         } else {
             logger.warn("No se encontraron tareas humanas para la observación, caso ID: {}", caseId);
         }
@@ -383,12 +383,12 @@ public class BonitaBusinessService {
             // Obtener los subprocesos del caso padre
             List<Map<String, Object>> subprocesses = bonitaApiSvc.getSubProcessesByCaseId(caseId);
 
-            logger.info("  → Subprocesos encontrados: {}", subprocesses.size());
+            logger.debug("Subprocesos encontrados: {}", subprocesses.size());
 
             // Buscar en cada subproceso la variable jsonPedidos
             for (Map<String, Object> subprocess : subprocesses) {
                 String subprocessCaseId = subprocess.get("id").toString();
-                logger.info("  → Buscando en subproceso: {}", subprocessCaseId);
+                logger.debug(" Buscando en subproceso: {}", subprocessCaseId);
 
                 // Obtener variables del subproceso
                 List<Map<String, Object>> variables = bonitaApiSvc.getVariablesByCaseId(subprocessCaseId);
@@ -397,18 +397,18 @@ public class BonitaBusinessService {
                     String varName = (String) variable.get("name");
 
                     if ("jsonPedidos".equals(varName)) {
-                        logger.info("jsonPedidos se encontró y tiene estos valores: {}  ", 
+                        logger.debug("jsonPedidos se encontro y tiene estos valores: {}  ", 
                             variable.get("value"));
                 
                         Object value = variable.get("value");
-                        logger.info("  ✓ jsonPedidos encontrado en subproceso {}: {}",
+                        logger.debug(" jsonPedidos encontrado en subproceso {}: {}",
                             subprocessCaseId, value != null ? "valor presente" : "null");
                         return value != null ? value.toString() : null;
                     }
                 }
             }
 
-            logger.warn("No se encontró la variable 'jsonPedidos' en ningún subproceso del caso {}", caseId);
+            logger.warn("No se encontro la variable 'jsonPedidos' en ningun subproceso del caso {}", caseId);
             return null;
 
         } catch (Exception e) {
@@ -432,7 +432,7 @@ public class BonitaBusinessService {
             List<Map<String, Object>> allCases = bonitaApiSvc.getProcessInstances();
 
             logger.debug("Buscando pedidos en Bonita");
-            logger.info("Total de casos padre encontrados: {}", allCases.size());
+            logger.debug("Total de casos padre encontrados: {}", allCases.size());
 
             // Para cada caso padre, buscar sus tareas humanas
             for (Map<String, Object> caseInstance : allCases) {
@@ -486,7 +486,7 @@ public class BonitaBusinessService {
                 }
             }
 
-            logger.info("═══ Resultado: {} subprocesos con pedidos encontrados ═══", result.size());
+            logger.debug(" Resultado: {} subprocesos con pedidos encontrados ═══", result.size());
             return result;
 
         } catch (Exception e) {
@@ -531,7 +531,7 @@ public class BonitaBusinessService {
                                 if ("jsonCompromisos".equals(varName)) {
                                     Object value = variable.get("value");
                                     
-                                    logger.info("Se encontró jsonCompromisos - valor presente={}", value != null);
+                                    logger.debug("Se encontro jsonCompromisos - valor presente={}", value != null);
                                     
                                     Map<String, Object> compromisoInfo = new HashMap<>();
                                     compromisoInfo.put("parentCaseId", parentCaseId);
@@ -550,7 +550,7 @@ public class BonitaBusinessService {
                 }
             }
             
-            logger.info("═══ Resultado: {} subprocesos con pedidos encontrados ═══", result.size());
+            logger.debug(" Resultado: {} subprocesos con pedidos encontrados ═══", result.size());
             return result;
             
         } catch (Exception e) {
